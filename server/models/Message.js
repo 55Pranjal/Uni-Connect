@@ -1,12 +1,18 @@
-// models/Message.js
 import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
   {
+    // Community messages
     channelId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Channel",
-      required: true,
+      index: true,
+    },
+
+    // DM messages
+    conversationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Conversation",
       index: true,
     },
 
@@ -49,5 +55,15 @@ const messageSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+messageSchema.pre("validate", function () {
+  if (!this.channelId && !this.conversationId) {
+    throw new Error("Message must belong to either channel or conversation");
+  }
+
+  if (this.channelId && this.conversationId) {
+    throw new Error("Message cannot belong to both channel and conversation");
+  }
+});
 
 export default mongoose.model("Message", messageSchema);

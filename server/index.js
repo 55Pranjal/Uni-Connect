@@ -57,31 +57,25 @@ io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
 
   /* =======================
-     JOIN COMMUNITY
+     COMMUNITY JOIN
   ======================= */
   socket.on("joinCommunity", (communityId) => {
-    console.log("🏠 Joining community:", communityId);
     socket.join(`community:${communityId}`);
   });
 
   /* =======================
-     JOIN CHANNEL
+     CHANNEL JOIN
   ======================= */
   socket.on("joinChannel", (channelId) => {
-    console.log("💬 Joining channel:", channelId);
     socket.join(`channel:${channelId}`);
   });
 
-  /* =======================
-     LEAVE CHANNEL
-  ======================= */
   socket.on("leaveChannel", (channelId) => {
-    console.log("🚪 Leaving channel:", channelId);
     socket.leave(`channel:${channelId}`);
   });
 
   /* =======================
-     SEND MESSAGE
+     SEND COMMUNITY MESSAGE
   ======================= */
   socket.on("sendMessage", async ({ messageId, channelId }) => {
     try {
@@ -92,26 +86,16 @@ io.on("connection", (socket) => {
 
       if (!message) return;
 
-      console.log("📨 Broadcasting message:", message._id);
-
       io.to(`channel:${channelId}`).emit("receiveMessage", message);
     } catch (err) {
-      console.error("❌ Socket sendMessage error:", err.message);
+      console.error("❌ sendMessage error:", err.message);
     }
   });
 
   /* =======================
-     TYPING INDICATOR (FIXED)
+     COMMUNITY TYPING
   ======================= */
   socket.on("typing:start", ({ channelId, userId, name }) => {
-    console.log(
-      "⌨️ typing:start from",
-      name,
-      "(" + userId + ")",
-      "in",
-      channelId,
-    );
-
     socket.to(`channel:${channelId}`).emit("typing:start", {
       userId,
       name,
@@ -119,26 +103,23 @@ io.on("connection", (socket) => {
   });
 
   socket.on("typing:stop", ({ channelId, userId }) => {
-    console.log("⌨️ typing:stop from", userId, "in", channelId);
-
     socket.to(`channel:${channelId}`).emit("typing:stop", {
       userId,
     });
   });
 
-  /* =======================
-     MESSAGE DELETE
-  ======================= */
-  socket.on("message:delete", ({ messageId, channelId }) => {
-    io.to(`channel:${channelId}`).emit("message:deleted", {
-      messageId,
-    });
+  /* =====================================================
+     =================== DM SECTION ======================
+     ===================================================== */
+
+  /* JOIN CONVERSATION */
+  socket.on("joinConversation", (conversationId) => {
+    console.log("📩 Joining conversation:", conversationId);
+    socket.join(`conversation:${conversationId}`);
   });
 
-  /* =======================
-     MESSAGE HELPFUL
-  ======================= */
-  socket.on("message:helpful", async ({ messageId, channelId }) => {
+  /* SEND DM */
+  socket.on("sendDM", async ({ messageId, conversationId }) => {
     try {
       const message = await Message.findById(messageId).populate(
         "senderId",
@@ -147,13 +128,26 @@ io.on("connection", (socket) => {
 
       if (!message) return;
 
-      io.to(`channel:${channelId}`).emit("message:helpful", {
-        messageId,
-        helpfulBy: message.feedback?.helpfulBy || [],
-      });
+      console.log("📨 Broadcasting DM:", message._id);
+
+      io.to(`conversation:${conversationId}`).emit("receiveDM", message);
     } catch (err) {
-      console.error("❌ Socket helpful error:", err.message);
+      console.error("❌ sendDM error:", err.message);
     }
+  });
+
+  /* DM TYPING START */
+  socket.on("dm:typing:start", ({ conversationId, userId, name }) => {
+    socket
+      .to(`conversation:${conversationId}`)
+      .emit("dm:typing:start", { userId, name });
+  });
+
+  /* DM TYPING STOP */
+  socket.on("dm:typing:stop", ({ conversationId, userId }) => {
+    socket
+      .to(`conversation:${conversationId}`)
+      .emit("dm:typing:stop", { userId });
   });
 
   /* =======================

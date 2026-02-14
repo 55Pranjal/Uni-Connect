@@ -1,4 +1,3 @@
-// models/Channel.js
 import mongoose from "mongoose";
 
 const channelSchema = new mongoose.Schema(
@@ -7,6 +6,7 @@ const channelSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Community",
       required: true,
+      index: true,
     },
 
     name: {
@@ -26,26 +26,15 @@ const channelSchema = new mongoose.Schema(
       index: true,
     },
 
-    allowedRoles: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Role",
-      },
-    ],
-
-    isDM: {
+    isDefault: {
       type: Boolean,
       default: false,
     },
-
-    participants: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
   },
   { timestamps: true },
 );
+
+// 🔥 Prevent duplicate channel names inside same community
+channelSchema.index({ communityId: 1, name: 1 }, { unique: true });
 
 export default mongoose.model("Channel", channelSchema);

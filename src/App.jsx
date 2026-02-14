@@ -11,7 +11,7 @@ import ProfilePage from "./components/ProfilePage.jsx";
 import DiscoverPage from "./components/DiscoverPage.jsx";
 import PublicProfilePage from "./components/PublicProfilePage.jsx";
 import ConnectionsPage from "./components/ConnectionsPage.jsx";
-import ChatPage from "./components/ChatPage.jsx";
+import DMChatPage from "./components/DMChatPage.jsx";
 import CommunityPage from "./components/CommunityPage.jsx";
 import CreateCommunity from "./components/CreateCommunity.jsx";
 
@@ -28,11 +28,7 @@ function App() {
       <Route path="/public/:id" element={<PublicProfilePage />} />
       <Route path="/connections" element={<ConnectionsPage />} />
 
-      {/* 🔥 NEW CHANNEL-BASED CHAT ROUTE */}
-      <Route
-        path="/community/:communityId/channel/:channelId"
-        element={<ChatPage />}
-      />
+      <Route path="/dm/:conversationId" element={<DMChatPage />} />
 
       <Route path="/communities" element={<CommunityPage />} />
       <Route path="/create-community" element={<CreateCommunity />} />

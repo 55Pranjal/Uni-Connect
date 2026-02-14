@@ -2,6 +2,7 @@ import React from "react";
 import { getAvatarUrl } from "../utils/avatar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import api from "../api/api";
 
 const SkillCard = ({
   userId,
@@ -25,27 +26,10 @@ const SkillCard = ({
   const visibleSkills = skills.slice(0, 3);
 
   const handleChat = async () => {
-    if (!token) return; // prevent broken state
-
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/dm/${userId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      const res = await api.post(`/dm/${userId}`);
 
-      if (!res.ok) {
-        throw new Error("Failed to open DM");
-      }
-
-      const data = await res.json();
-
-      navigate(`/community/${data.communityId}/channel/${data.channelId}`);
+      navigate(`/dm/${res.data.conversationId}`);
     } catch (err) {
       console.error("Failed to open DM:", err);
     }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import { io } from "socket.io-client";
+import api from "../api/api";
 import Navbar from "./Navbar.jsx";
 import { useAuth } from "../context/AuthContext";
 
@@ -13,8 +13,8 @@ const formatTime = (date) =>
     minute: "2-digit",
   });
 
-const ChatPage = () => {
-  const { communityId, channelId } = useParams();
+const DMChatPage = () => {
+  const { conversationId } = useParams();
   const { user, token, loading: authLoading } = useAuth();
 
   const userId = user?._id;
@@ -29,49 +29,49 @@ const ChatPage = () => {
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
-  /* ================= FETCH MESSAGES ================= */
+  /* ================= FETCH DM MESSAGES ================= */
   useEffect(() => {
     if (authLoading) return;
-    if (!channelId || !token) return;
+    if (!conversationId || !token) return;
 
     setLoading(true);
 
-    axios
-      .get(`${BACKEND_URL}/api/channels/${channelId}/messages`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    api
+      .get(`/dm/${conversationId}/messages`)
       .then((res) => setMessages(res.data))
-      .catch((err) => console.error("Fetch failed:", err))
+      .catch((err) => console.error("Fetch DM failed:", err))
       .finally(() => setLoading(false));
-  }, [channelId, token, authLoading]);
+  }, [conversationId, token, authLoading]);
 
   /* ================= SOCKET ================= */
   useEffect(() => {
     if (authLoading) return;
-    if (!userId || !channelId || !token) return;
+    if (!userId || !conversationId || !token) return;
 
-    const socket = io(BACKEND_URL);
+    const socket = io(BACKEND_URL, {
+      auth: { token },
+    });
+
     socketRef.current = socket;
 
     socket.on("connect", () => {
       setIsSocketReady(true);
-      socket.emit("joinCommunity", communityId);
-      socket.emit("joinChannel", channelId);
+      socket.emit("joinConversation", conversationId);
     });
 
     socket.on("disconnect", () => {
       setIsSocketReady(false);
     });
 
-    /* ===== RECEIVE MESSAGE ===== */
-    socket.on("receiveMessage", (msg) => {
+    /* ===== RECEIVE DM ===== */
+    socket.on("receiveDM", (msg) => {
       setMessages((prev) =>
         prev.some((m) => m._id === msg._id) ? prev : [...prev, msg],
       );
     });
 
     /* ===== TYPING START ===== */
-    socket.on("typing:start", ({ userId: typingUserId, name }) => {
+    socket.on("dm:typing:start", ({ userId: typingUserId, name }) => {
       if (typingUserId === userId) return;
 
       setTypingUsers((prev) => {
@@ -81,7 +81,7 @@ const ChatPage = () => {
     });
 
     /* ===== TYPING STOP ===== */
-    socket.on("typing:stop", ({ userId: typingUserId }) => {
+    socket.on("dm:typing:stop", ({ userId: typingUserId }) => {
       setTypingUsers((prev) => prev.filter((u) => u.id !== typingUserId));
     });
 
@@ -90,7 +90,7 @@ const ChatPage = () => {
       socketRef.current = null;
       setIsSocketReady(false);
     };
-  }, [communityId, channelId, userId, token, authLoading]);
+  }, [conversationId, userId, token, authLoading]);
 
   /* ================= AUTO SCROLL ================= */
   useEffect(() => {
@@ -103,10 +103,10 @@ const ChatPage = () => {
 
     if (!socketRef.current || !isSocketReady) return;
 
-    socketRef.current.emit("typing:start", {
-      channelId,
+    socketRef.current.emit("dm:typing:start", {
+      conversationId,
       userId,
-      name: user.name, // 🔥 IMPORTANT
+      name: user.name,
     });
 
     clearTimeout(typingTimeoutRef.current);
@@ -114,38 +114,36 @@ const ChatPage = () => {
     typingTimeoutRef.current = setTimeout(() => {
       if (!socketRef.current) return;
 
-      socketRef.current.emit("typing:stop", {
-        channelId,
+      socketRef.current.emit("dm:typing:stop", {
+        conversationId,
         userId,
       });
     }, 1000);
   };
 
-  /* ================= SEND MESSAGE ================= */
+  /* ================= SEND DM ================= */
   const sendMessage = async () => {
     if (!text.trim()) return;
     if (!isSocketReady) return;
 
     try {
-      const res = await axios.post(
-        `${BACKEND_URL}/api/channels/${channelId}/messages`,
-        { content: text },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      const res = await api.post(`/dm/${conversationId}/messages`, {
+        content: text,
+      });
 
-      socketRef.current.emit("sendMessage", {
+      socketRef.current.emit("sendDM", {
         messageId: res.data._id,
-        channelId,
+        conversationId,
       });
 
       setText("");
 
-      socketRef.current.emit("typing:stop", {
-        channelId,
+      socketRef.current.emit("dm:typing:stop", {
+        conversationId,
         userId,
       });
     } catch (err) {
-      console.error("Send failed:", err);
+      console.error("Send DM failed:", err);
     }
   };
 
@@ -162,7 +160,7 @@ const ChatPage = () => {
           <div className="h-[75vh] flex flex-col bg-white border rounded-2xl shadow-sm overflow-hidden">
             {/* HEADER */}
             <div className="px-6 py-4 border-b bg-slate-50">
-              <h3 className="font-semibold">Channel</h3>
+              <h3 className="font-semibold">Direct Message</h3>
 
               {typingNames.length > 0 && (
                 <p className="text-xs text-indigo-600 animate-pulse mt-1">
@@ -242,4 +240,4 @@ const ChatPage = () => {
   );
 };
 
-export default ChatPage;
+export default DMChatPage;
