@@ -1,4 +1,4 @@
-Chat-App is a full-stack real-time messaging application built with the MERN stack and Socket.io. It enables users to join community-based chat rooms and communicate instantly through a smooth, responsive interface.
+Uni-Connect is a full-stack real-time messaging application built with the MERN stack and Socket.io. It enables users to join community-based chat rooms and communicate instantly through a smooth, responsive interface.
 
 What makes this platform unique is its gamification system — users earn experience points (XP) and level up by actively helping others in conversations. This encourages meaningful engagement, collaboration, and knowledge sharing rather than passive chatting. The leveling system promotes a growth-driven community where contribution is recognized.
 
