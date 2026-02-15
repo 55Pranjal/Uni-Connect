@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, Outlet } from "react-router-dom";
 import api from "../api/api";
 import Navbar from "../components/Navbar";
+import CreateChannelModal from "../components/modals/CreateChannelModal";
 
 const ChannelPage = () => {
   const { communityId, channelId } = useParams();
@@ -10,15 +11,18 @@ const ChannelPage = () => {
   const [community, setCommunity] = useState(null);
   const [channels, setChannels] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [myRole, setMyRole] = useState(null);
 
   /* ================= FETCH COMMUNITY + CHANNELS ================= */
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await api.get(`/community/${communityId}`);
-        console.log(res.data);
+
         setCommunity(res.data.community);
         setChannels(res.data.channels);
+        setMyRole(res.data.myRole);
 
         // 🔥 Auto redirect to default channel
         if (!channelId && res.data.channels.length > 0) {
@@ -49,6 +53,27 @@ const ChannelPage = () => {
       </>
     );
   }
+
+  const handleCreateChannel = async (data) => {
+    try {
+      const res = await api.post(`/community/${communityId}/channel`, data);
+
+      // Backend now returns full structure
+      setCommunity(res.data.community);
+      setChannels(res.data.channels);
+      setMyRole(res.data.myRole);
+
+      setShowModal(false);
+
+      navigate(
+        `/community/${communityId}/channel/${
+          res.data.channels[res.data.channels.length - 1]._id
+        }`,
+      );
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to create channel");
+    }
+  };
 
   return (
     <>
@@ -89,11 +114,16 @@ const ChannelPage = () => {
           </div>
 
           {/* Add Channel Button */}
-          <div className="p-3 border-t">
-            <button className="w-full py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-              + Add Channel
-            </button>
-          </div>
+          {myRole == "admin" && (
+            <div className="p-3 border-t">
+              <button
+                onClick={() => setShowModal(true)}
+                className="w-full py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+              >
+                + Add Channel
+              </button>
+            </div>
+          )}
         </aside>
 
         {/* ===== MAIN CHAT AREA ===== */}
@@ -101,6 +131,11 @@ const ChannelPage = () => {
           <Outlet />
         </main>
       </div>
+      <CreateChannelModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onCreate={handleCreateChannel}
+      />
     </>
   );
 };
