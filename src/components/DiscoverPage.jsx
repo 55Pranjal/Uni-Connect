@@ -7,13 +7,17 @@ import {
   acceptConnectionRequest,
 } from "../api/connection";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import api from "../api/api";
 
 const DiscoverPage = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("users"); // 🔥 new
 
-  const { token, loading: authLoading } = useAuth(); // 🔥 single source
+  const { token, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
   /* ================= DEBOUNCED SEARCH ================= */
   useEffect(() => {
@@ -24,32 +28,38 @@ const DiscoverPage = () => {
       return;
     }
 
-    if (!token) return; // don't search if not authenticated
+    if (!token) return;
 
     const timeout = setTimeout(() => {
-      searchUsers();
+      if (activeTab === "users") {
+        searchUsers();
+      } else {
+        searchCommunities();
+      }
     }, 400);
 
     return () => clearTimeout(timeout);
-  }, [query, token, authLoading]);
+  }, [query, token, authLoading, activeTab]);
 
+  /* ================= SEARCH USERS ================= */
   const searchUsers = async () => {
-    if (!token) return;
-
     try {
       setLoading(true);
+      const res = await api.get(`/user/search?q=${query}`);
+      setResults(res.data.users || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/search?q=${query}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      const data = await res.json();
-      setResults(data.users || []);
+  /* ================= SEARCH COMMUNITIES ================= */
+  const searchCommunities = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get(`/community?search=${query}`);
+      setResults(res.data || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -71,7 +81,6 @@ const DiscoverPage = () => {
       await sendConnectionRequest(userId);
       updateConnectionStatus(userId, "pending_sent");
     } catch (err) {
-      console.error(err);
       alert(err.response?.data?.message || "Failed to send request");
     }
   };
@@ -81,7 +90,6 @@ const DiscoverPage = () => {
       await acceptConnectionRequest(userId);
       updateConnectionStatus(userId, "connected");
     } catch (err) {
-      console.error(err);
       alert(err.response?.data?.message || "Failed to accept request");
     }
   };
@@ -91,69 +99,114 @@ const DiscoverPage = () => {
       <Navbar />
 
       <main className="min-h-[70vh] px-6 pt-16">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-2xl font-bold text-slate-800 mb-2 text-center">
-            Discover People
+        <div className="max-w-6xl mx-auto">
+          {/* HEADER */}
+          <h1 className="text-2xl font-bold text-slate-800 mb-6 text-center">
+            Discover
           </h1>
-          <p className="text-slate-500 text-center mb-8">
-            Search by name to find people you know
-          </p>
 
+          {/* TABS */}
+          <div className="flex justify-center mb-6 gap-4">
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`px-4 py-2 rounded-xl ${
+                activeTab === "users"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-200"
+              }`}
+            >
+              Users
+            </button>
+
+            <button
+              onClick={() => setActiveTab("communities")}
+              className={`px-4 py-2 rounded-xl ${
+                activeTab === "communities"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-200"
+              }`}
+            >
+              Communities
+            </button>
+          </div>
+
+          {/* SEARCH */}
           <div className="relative max-w-xl mx-auto mb-10">
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name (e.g. Pranjal)"
+              placeholder={`Search ${
+                activeTab === "users" ? "users" : "communities"
+              }...`}
               className="w-full rounded-2xl border border-slate-300 px-5 py-4
                          focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-              🔍
-            </span>
           </div>
 
+          {/* RESULTS */}
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {authLoading && (
+            {loading && (
               <p className="text-slate-500 text-center col-span-full">
-                Checking authentication...
+                Searching...
               </p>
             )}
 
-            {!authLoading && loading && (
+            {!loading && results.length === 0 && query.length >= 2 && (
               <p className="text-slate-500 text-center col-span-full">
-                Searching…
+                No results found
               </p>
             )}
 
-            {!authLoading &&
-              !loading &&
-              results.length === 0 &&
-              query.length >= 2 && (
-                <p className="text-slate-500 text-center col-span-full">
-                  No users found
-                </p>
-              )}
+            {/* USERS */}
+            {activeTab === "users" &&
+              results.map((user) => (
+                <SkillCard
+                  key={user._id}
+                  userId={user._id}
+                  name={user.name}
+                  dept={user.department}
+                  year={user.year}
+                  avatarSeed={user.avatarSeed}
+                  profileLevel={0}
+                  skills={user.skills || []}
+                  connectionStatus={user.connectionStatus}
+                  onConnect={handleConnect}
+                  onAccept={handleAccept}
+                />
+              ))}
 
-            {results.map((user) => (
-              <SkillCard
-                key={user._id}
-                userId={user._id}
-                name={user.name}
-                dept={user.department}
-                year={user.year}
-                avatarSeed={user.avatarSeed}
-                profileLevel={0}
-                skills={
-                  user.skills?.filter((s) =>
-                    user.cardSkills?.includes(s.name),
-                  ) || []
-                }
-                connectionStatus={user.connectionStatus}
-                onConnect={handleConnect}
-                onAccept={handleAccept}
-              />
-            ))}
+            {/* COMMUNITIES */}
+            {activeTab === "communities" &&
+              results.map((community) => (
+                <div
+                  key={community._id}
+                  onClick={() => navigate(`/community/${community._id}`)}
+                  className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md cursor-pointer transition"
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <h2 className="font-semibold text-lg">{community.name}</h2>
+
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        community.isPrivate
+                          ? "bg-red-100 text-red-600"
+                          : "bg-green-100 text-green-600"
+                      }`}
+                    >
+                      {community.isPrivate ? "Private" : "Public"}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-slate-600 mb-4">
+                    {community.description || "No description provided"}
+                  </p>
+
+                  <div className="text-xs text-slate-500">
+                    👥 {community.memberCount || 0} members
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
       </main>
