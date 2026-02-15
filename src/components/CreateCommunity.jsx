@@ -35,7 +35,7 @@ const CreateCommunity = () => {
       const res = await api.post("/community", formData);
 
       // Optional: redirect to community page after creation
-      navigate(`/community/${res.data.slug}`);
+      navigate(`/community/${res.data._id}`);
     } catch (err) {
       setError(err.response?.data?.message || "Error creating community");
     } finally {

@@ -14,6 +14,7 @@ import ConnectionsPage from "./components/ConnectionsPage.jsx";
 import DMChatPage from "./components/DMChatPage.jsx";
 import CommunityPage from "./components/CommunityPage.jsx";
 import CreateCommunity from "./components/CreateCommunity.jsx";
+import ChannelPage from "./components/ChannelPage.jsx";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
 
       <Route path="/communities" element={<CommunityPage />} />
       <Route path="/create-community" element={<CreateCommunity />} />
+      <Route path="/community/:communityId" element={<ChannelPage />} />
 
       <Route path="*" element={<div>NO ROUTE MATCHED</div>} />
     </Routes>
