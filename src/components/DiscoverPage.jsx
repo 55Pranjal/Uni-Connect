@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import SkillCard from "../components/SkillCard";
+import SkillCard from "../components/cards/SkillCard";
+
 import {
   sendConnectionRequest,
   acceptConnectionRequest,
@@ -9,6 +10,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
+import CommunityCard from "./cards/CommunityCard";
 
 const DiscoverPage = () => {
   const [query, setQuery] = useState("");
@@ -179,33 +181,7 @@ const DiscoverPage = () => {
             {/* COMMUNITIES */}
             {activeTab === "communities" &&
               results.map((community) => (
-                <div
-                  key={community._id}
-                  onClick={() => navigate(`/community/${community._id}`)}
-                  className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md cursor-pointer transition"
-                >
-                  <div className="flex justify-between items-center mb-3">
-                    <h2 className="font-semibold text-lg">{community.name}</h2>
-
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        community.isPrivate
-                          ? "bg-red-100 text-red-600"
-                          : "bg-green-100 text-green-600"
-                      }`}
-                    >
-                      {community.isPrivate ? "Private" : "Public"}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-slate-600 mb-4">
-                    {community.description || "No description provided"}
-                  </p>
-
-                  <div className="text-xs text-slate-500">
-                    👥 {community.memberCount || 0} members
-                  </div>
-                </div>
+                <CommunityCard key={community._id} community={community} />
               ))}
           </div>
         </div>

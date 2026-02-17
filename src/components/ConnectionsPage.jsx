@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import SkillCard from "../components/SkillCard";
+import SkillCard from "../components/cards/SkillCard";
 import api from "../api/api";
 import { acceptConnectionRequest, removeConnection } from "../api/connection";
 

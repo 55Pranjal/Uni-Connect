@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import SkillCard from "../components/SkillCard";
+import SkillCard from "../components/cards/SkillCard";
+
 import { getAvatarUrl } from "../utils/avatar";
 import { calculateProfileLevel } from "../utils/profileLevel";
 import { useAuth } from "../context/AuthContext";

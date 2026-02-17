@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import SkillCard from "../components/SkillCard";
+import SkillCard from "../components/cards/SkillCard";
+
 import { getAvatarUrl } from "../utils/avatar";
 import { calculateProfileLevel } from "../utils/profileLevel";
 import { useNavigate } from "react-router-dom";
