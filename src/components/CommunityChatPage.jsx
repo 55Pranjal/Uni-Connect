@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useOutletContext } from "react-router-dom";
+
 import { io } from "socket.io-client";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
@@ -14,9 +15,11 @@ const formatTime = (date) =>
 
 const CommunityChatPage = () => {
   const { communityId, channelId } = useParams();
-  const { user, token } = useAuth();
+  const { user } = useAuth();
+  const { myRole } = useOutletContext();
 
   const [messages, setMessages] = useState([]);
+  const [channelType, setChannelType] = useState("text");
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [typingUsers, setTypingUsers] = useState([]);
@@ -32,7 +35,10 @@ const CommunityChatPage = () => {
     const fetchMessages = async () => {
       try {
         const res = await api.get(`/channels/${channelId}/messages`);
-        setMessages(res.data);
+
+        // 🔥 backend now returns { channelType, messages }
+        setChannelType(res.data.channelType);
+        setMessages(res.data.messages);
       } catch (err) {
         console.error("Failed to fetch messages:", err);
       } finally {
@@ -43,7 +49,7 @@ const CommunityChatPage = () => {
     fetchMessages();
   }, [channelId]);
 
-  /* ================= SOCKET CONNECTION ================= */
+  /* ================= SOCKET ================= */
   useEffect(() => {
     if (!channelId || !user) return;
 
@@ -74,22 +80,17 @@ const CommunityChatPage = () => {
       setTypingUsers((prev) => prev.filter((u) => u.id !== userId));
     });
 
-    return () => {
-      socket.disconnect();
-    };
+    return () => socket.disconnect();
   }, [channelId, communityId, user]);
 
   /* ================= AUTO SCROLL ================= */
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typingUsers]);
 
   /* ================= HANDLE TYPING ================= */
   const handleTyping = (value) => {
     setText(value);
-
     if (!socketRef.current) return;
 
     socketRef.current.emit("typing:start", {
@@ -117,8 +118,11 @@ const CommunityChatPage = () => {
         content: text,
       });
 
+      // 🔥 backend returns { message, channelType }
+      const newMessage = res.data.message;
+
       socketRef.current.emit("sendMessage", {
-        messageId: res.data._id,
+        messageId: newMessage._id,
         channelId,
       });
 
@@ -133,12 +137,18 @@ const CommunityChatPage = () => {
     }
   };
 
+  const isAnnouncementReadOnly =
+    channelType === "announcement" && !["admin", "owner"].includes(myRole);
   /* ================= RENDER ================= */
   return (
     <>
-      {/* Channel Header */}
+      {/* Header */}
       <div className="px-6 py-4 border-b bg-white">
-        <h3 className="font-semibold text-lg">Channel Chat</h3>
+        <h3 className="font-semibold text-lg">
+          {channelType === "announcement"
+            ? "📢 Announcement Channel"
+            : "💬 Channel Chat"}
+        </h3>
 
         {typingUsers.length > 0 && (
           <p className="text-xs text-indigo-600 mt-1 animate-pulse">
@@ -189,22 +199,40 @@ const CommunityChatPage = () => {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t bg-white flex gap-3">
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => handleTyping(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="Type a message..."
-          className="flex-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500"
-        />
+      <div className="p-4 border-t bg-white flex flex-col gap-2">
+        {isAnnouncementReadOnly && (
+          <div className="text-sm text-amber-600 bg-amber-50 px-4 py-2 rounded-lg border border-amber-200">
+            Only admins can post in this announcement channel.
+          </div>
+        )}
 
-        <button
-          onClick={sendMessage}
-          className="px-5 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
-        >
-          Send
-        </button>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => handleTyping(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            placeholder={
+              isAnnouncementReadOnly ? "Read-only channel" : "Type a message..."
+            }
+            disabled={isAnnouncementReadOnly}
+            className={`flex-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 ${
+              isAnnouncementReadOnly ? "bg-slate-100 cursor-not-allowed" : ""
+            }`}
+          />
+
+          <button
+            onClick={sendMessage}
+            disabled={isAnnouncementReadOnly}
+            className={`px-5 py-2 rounded-xl transition ${
+              isAnnouncementReadOnly
+                ? "bg-slate-300 text-slate-500 cursor-not-allowed"
+                : "bg-indigo-600 text-white hover:bg-indigo-700"
+            }`}
+          >
+            Send
+          </button>
+        </div>
       </div>
     </>
   );

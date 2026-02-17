@@ -22,9 +22,9 @@ const ChannelPage = () => {
 
         setCommunity(res.data.community);
         setChannels(res.data.channels);
-        setMyRole(res.data.myRole);
+        setMyRole(res.data.myRole); // 🔥 important
 
-        // 🔥 Auto redirect to default channel
+        // Auto redirect to default channel
         if (!channelId && res.data.channels.length > 0) {
           const defaultChannel =
             res.data.channels.find((c) => c.isDefault) || res.data.channels[0];
@@ -54,26 +54,28 @@ const ChannelPage = () => {
     );
   }
 
+  /* ================= CREATE CHANNEL ================= */
   const handleCreateChannel = async (data) => {
     try {
       const res = await api.post(`/community/${communityId}/channel`, data);
 
-      // Backend now returns full structure
+      // Backend returns updated structure
       setCommunity(res.data.community);
       setChannels(res.data.channels);
       setMyRole(res.data.myRole);
 
       setShowModal(false);
 
-      navigate(
-        `/community/${communityId}/channel/${
-          res.data.channels[res.data.channels.length - 1]._id
-        }`,
-      );
+      // Navigate to newly created channel
+      const newChannel = res.data.channels[res.data.channels.length - 1];
+
+      navigate(`/community/${communityId}/channel/${newChannel._id}`);
     } catch (err) {
       alert(err.response?.data?.message || "Failed to create channel");
     }
   };
+
+  const canCreateChannel = myRole === "admin" || myRole === "owner";
 
   return (
     <>
@@ -114,7 +116,7 @@ const ChannelPage = () => {
           </div>
 
           {/* Add Channel Button */}
-          {myRole == "admin" && (
+          {canCreateChannel && (
             <div className="p-3 border-t">
               <button
                 onClick={() => setShowModal(true)}
@@ -128,9 +130,11 @@ const ChannelPage = () => {
 
         {/* ===== MAIN CHAT AREA ===== */}
         <main className="flex-1 flex flex-col">
-          <Outlet />
+          {/* 🔥 Role passed safely to chat page */}
+          <Outlet context={{ myRole }} />
         </main>
       </div>
+
       <CreateChannelModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
