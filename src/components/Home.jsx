@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
-import SkillCard from "./SkillCard.jsx";
+import SkillCard from "../components/cards/SkillCard.jsx";
 import { useAuth } from "../context/AuthContext";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";

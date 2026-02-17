@@ -1,8 +1,8 @@
 import React from "react";
-import { getAvatarUrl } from "../utils/avatar";
+import { getAvatarUrl } from "../../utils/avatar";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import api from "../api/api";
+import { useAuth } from "../../context/AuthContext";
+import api from "../../api/api";
 
 const SkillCard = ({
   userId,

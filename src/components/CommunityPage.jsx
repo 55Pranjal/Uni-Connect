@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 import Navbar from "./Navbar";
+import CommunityCard from "../components/cards/CommunityCard";
 
 const CommunityPage = () => {
   const navigate = useNavigate();
@@ -10,7 +11,6 @@ const CommunityPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  /* ================= FETCH MY COMMUNITIES ================= */
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
@@ -69,33 +69,11 @@ const CommunityPage = () => {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((community) => (
-              <div
+              <CommunityCard
                 key={community._id}
-                onClick={() => navigate(`/community/${community._id}`)}
-                className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md cursor-pointer transition"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold">{community.name}</h2>
-
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      community.isPrivate
-                        ? "bg-red-100 text-red-600"
-                        : "bg-green-100 text-green-600"
-                    }`}
-                  >
-                    {community.isPrivate ? "Private" : "Public"}
-                  </span>
-                </div>
-
-                <p className="text-sm text-slate-600 mb-4 line-clamp-2">
-                  {community.description || "No description provided."}
-                </p>
-
-                <div className="text-xs text-slate-500">
-                  👥 {community.memberCount || 0} members
-                </div>
-              </div>
+                community={community}
+                mode="my" // 🔥 Important
+              />
             ))}
           </div>
         )}
