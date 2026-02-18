@@ -3,6 +3,7 @@ import { useNavigate, useParams, Outlet } from "react-router-dom";
 import api from "../api/api";
 import Navbar from "../components/Navbar";
 import CreateChannelModal from "../components/modals/CreateChannelModal";
+import CommunityMembersModal from "../components/modals/CommunityMembersModal";
 
 const ChannelPage = () => {
   const { communityId, channelId } = useParams();
@@ -13,6 +14,7 @@ const ChannelPage = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [myRole, setMyRole] = useState(null);
+  const [showMembers, setShowMembers] = useState(false);
 
   /* ================= FETCH COMMUNITY + CHANNELS ================= */
   useEffect(() => {
@@ -87,8 +89,11 @@ const ChannelPage = () => {
           {/* Community Header */}
           <div className="p-4 border-b">
             <h2 className="font-bold text-lg">{community?.name}</h2>
-            <p className="text-xs text-slate-500">
-              {community?.memberCount || 0} members
+            <p
+              onClick={() => setShowMembers(true)}
+              className="text-xs text-slate-500 cursor-pointer hover:text-indigo-600 transition"
+            >
+              👥 {community?.memberCount || 0} members
             </p>
           </div>
 
@@ -139,6 +144,12 @@ const ChannelPage = () => {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onCreate={handleCreateChannel}
+      />
+
+      <CommunityMembersModal
+        isOpen={showMembers}
+        onClose={() => setShowMembers(false)}
+        communityId={communityId}
       />
     </>
   );
