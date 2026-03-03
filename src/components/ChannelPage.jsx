@@ -7,6 +7,7 @@ import CommunityMembersModal from "../components/modals/CommunityMembersModal";
 import { useAuth } from "../context/AuthContext";
 import { io } from "socket.io-client";
 import DeleteChannelModal from "../components/modals/DeleteChannelModal";
+import RenameChannelModal from "../components/modals/RenameChannelModal";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL);
 
@@ -24,6 +25,7 @@ const ChannelPage = () => {
 
   const [openMenu, setOpenMenu] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [renameTarget, setRenameTarget] = useState(null);
 
   const canManageChannels = myRole === "admin";
 
@@ -59,18 +61,28 @@ const ChannelPage = () => {
   useEffect(() => {
     socket.emit("joinCommunity", communityId);
 
-    socket.on("channelDeleted", ({ channelId: deletedId }) => {
+    const handleChannelDeleted = ({ channelId: deletedId }) => {
       setChannels((prev) => prev.filter((c) => c._id !== deletedId));
 
       if (channelId === deletedId) {
         navigate(`/community/${communityId}`);
       }
-    });
+    };
+
+    const handleChannelRenamed = ({ channelId, name }) => {
+      setChannels((prev) =>
+        prev.map((c) => (c._id === channelId ? { ...c, name } : c)),
+      );
+    };
+
+    socket.on("channelDeleted", handleChannelDeleted);
+    socket.on("channelRenamed", handleChannelRenamed);
 
     return () => {
-      socket.off("channelDeleted");
+      socket.off("channelDeleted", handleChannelDeleted);
+      socket.off("channelRenamed", handleChannelRenamed);
     };
-  }, [communityId, channelId]);
+  }, [communityId]); // 🔥 remove channelId
 
   /* ================= CREATE CHANNEL ================= */
   const handleCreateChannel = async (data) => {
@@ -99,6 +111,14 @@ const ChannelPage = () => {
       navigate(`/community/${communityId}`);
     }
   };
+
+  /* ================= RENAME CHANNEL ================= */
+  const handleRenameSuccess = (id, newName) => {
+    setChannels((prev) =>
+      prev.map((c) => (c._id === id ? { ...c, name: newName } : c)),
+    );
+  };
+
   return (
     <>
       <Navbar />
@@ -151,7 +171,17 @@ const ChannelPage = () => {
                 )}
 
                 {openMenu === ch._id && (
-                  <div className="absolute right-0 top-10 bg-white shadow-lg rounded-lg border w-36 z-50">
+                  <div className="absolute right-0 top-10 bg-white shadow-lg rounded-lg border w-40 z-50">
+                    <button
+                      onClick={() => {
+                        setRenameTarget(ch);
+                        setOpenMenu(null);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-slate-100"
+                    >
+                      Rename
+                    </button>
+
                     <button
                       onClick={() => {
                         setDeleteTarget(ch);
@@ -159,7 +189,7 @@ const ChannelPage = () => {
                       }}
                       className="w-full text-left px-4 py-2 text-red-500 hover:bg-slate-100"
                     >
-                      Delete Channel
+                      Delete
                     </button>
                   </div>
                 )}
@@ -201,12 +231,22 @@ const ChannelPage = () => {
         currentUserId={user?._id}
       />
 
+      {/* DELETE CHANNEL MODAL */}
       <DeleteChannelModal
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         communityId={communityId}
         channel={deleteTarget}
         onSuccess={handleDeleteSuccess}
+      />
+
+      {/* RENAME CHANNEL MODAL */}
+      <RenameChannelModal
+        isOpen={!!renameTarget}
+        onClose={() => setRenameTarget(null)}
+        communityId={communityId}
+        channel={renameTarget}
+        onSuccess={handleRenameSuccess}
       />
     </>
   );
