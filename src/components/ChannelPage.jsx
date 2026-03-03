@@ -4,6 +4,7 @@ import api from "../api/api";
 import Navbar from "../components/Navbar";
 import CreateChannelModal from "../components/modals/CreateChannelModal";
 import CommunityMembersModal from "../components/modals/CommunityMembersModal";
+import { useAuth } from "../context/AuthContext";
 
 const ChannelPage = () => {
   const { communityId, channelId } = useParams();
@@ -15,6 +16,8 @@ const ChannelPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [myRole, setMyRole] = useState(null);
   const [showMembers, setShowMembers] = useState(false);
+
+  const { user } = useAuth(); // or from Redux / context
 
   /* ================= FETCH COMMUNITY + CHANNELS ================= */
   useEffect(() => {
@@ -150,6 +153,7 @@ const ChannelPage = () => {
         isOpen={showMembers}
         onClose={() => setShowMembers(false)}
         communityId={communityId}
+        currentUserId={user?._id}
       />
     </>
   );
