@@ -5,10 +5,15 @@ import Navbar from "../components/Navbar";
 import CreateChannelModal from "../components/modals/CreateChannelModal";
 import CommunityMembersModal from "../components/modals/CommunityMembersModal";
 import { useAuth } from "../context/AuthContext";
+import { io } from "socket.io-client";
+import DeleteChannelModal from "../components/modals/DeleteChannelModal";
+
+const socket = io(import.meta.env.VITE_BACKEND_URL);
 
 const ChannelPage = () => {
   const { communityId, channelId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [community, setCommunity] = useState(null);
   const [channels, setChannels] = useState([]);
@@ -17,7 +22,10 @@ const ChannelPage = () => {
   const [myRole, setMyRole] = useState(null);
   const [showMembers, setShowMembers] = useState(false);
 
-  const { user } = useAuth(); // or from Redux / context
+  const [openMenu, setOpenMenu] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const canManageChannels = myRole === "admin";
 
   /* ================= FETCH COMMUNITY + CHANNELS ================= */
   useEffect(() => {
@@ -27,9 +35,8 @@ const ChannelPage = () => {
 
         setCommunity(res.data.community);
         setChannels(res.data.channels);
-        setMyRole(res.data.myRole); // 🔥 important
+        setMyRole(res.data.myRole);
 
-        // Auto redirect to default channel
         if (!channelId && res.data.channels.length > 0) {
           const defaultChannel =
             res.data.channels.find((c) => c.isDefault) || res.data.channels[0];
@@ -48,30 +55,34 @@ const ChannelPage = () => {
     fetchData();
   }, [communityId]);
 
-  if (loading) {
-    return (
-      <>
-        <Navbar />
-        <div className="p-6 text-center text-slate-500">
-          Loading community...
-        </div>
-      </>
-    );
-  }
+  /* ================= SOCKET LISTENER ================= */
+  useEffect(() => {
+    socket.emit("joinCommunity", communityId);
+
+    socket.on("channelDeleted", ({ channelId: deletedId }) => {
+      setChannels((prev) => prev.filter((c) => c._id !== deletedId));
+
+      if (channelId === deletedId) {
+        navigate(`/community/${communityId}`);
+      }
+    });
+
+    return () => {
+      socket.off("channelDeleted");
+    };
+  }, [communityId, channelId]);
 
   /* ================= CREATE CHANNEL ================= */
   const handleCreateChannel = async (data) => {
     try {
       const res = await api.post(`/community/${communityId}/channel`, data);
 
-      // Backend returns updated structure
       setCommunity(res.data.community);
       setChannels(res.data.channels);
       setMyRole(res.data.myRole);
 
       setShowModal(false);
 
-      // Navigate to newly created channel
       const newChannel = res.data.channels[res.data.channels.length - 1];
 
       navigate(`/community/${communityId}/channel/${newChannel._id}`);
@@ -80,8 +91,14 @@ const ChannelPage = () => {
     }
   };
 
-  const canCreateChannel = myRole === "admin" || myRole === "owner";
+  /* ================= DELETE CHANNEL ================= */
+  const handleDeleteSuccess = (deletedId) => {
+    setChannels((prev) => prev.filter((c) => c._id !== deletedId));
 
+    if (channelId === deletedId) {
+      navigate(`/community/${communityId}`);
+    }
+  };
   return (
     <>
       <Navbar />
@@ -107,24 +124,51 @@ const ChannelPage = () => {
             </div>
 
             {channels.map((ch) => (
-              <button
+              <div
                 key={ch._id}
-                onClick={() =>
-                  navigate(`/community/${communityId}/channel/${ch._id}`)
-                }
-                className={`w-full text-left px-3 py-2 rounded-lg ${
-                  ch._id === channelId
-                    ? "bg-indigo-100 text-indigo-600 font-medium"
-                    : "hover:bg-slate-100"
-                }`}
+                className="relative group flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100"
               >
-                # {ch.name}
-              </button>
+                <button
+                  onClick={() =>
+                    navigate(`/community/${communityId}/channel/${ch._id}`)
+                  }
+                  className={`flex-1 text-left ${
+                    ch._id === channelId ? "text-indigo-600 font-medium" : ""
+                  }`}
+                >
+                  # {ch.name}
+                </button>
+
+                {canManageChannels && !ch.isDefault && (
+                  <button
+                    onClick={() =>
+                      setOpenMenu(openMenu === ch._id ? null : ch._id)
+                    }
+                    className="text-slate-400 hover:text-slate-600"
+                  >
+                    ⋮
+                  </button>
+                )}
+
+                {openMenu === ch._id && (
+                  <div className="absolute right-0 top-10 bg-white shadow-lg rounded-lg border w-36 z-50">
+                    <button
+                      onClick={() => {
+                        setDeleteTarget(ch);
+                        setOpenMenu(null);
+                      }}
+                      className="w-full text-left px-4 py-2 text-red-500 hover:bg-slate-100"
+                    >
+                      Delete Channel
+                    </button>
+                  </div>
+                )}
+              </div>
             ))}
           </div>
 
-          {/* Add Channel Button */}
-          {canCreateChannel && (
+          {/* Add Channel */}
+          {canManageChannels && (
             <div className="p-3 border-t">
               <button
                 onClick={() => setShowModal(true)}
@@ -138,22 +182,31 @@ const ChannelPage = () => {
 
         {/* ===== MAIN CHAT AREA ===== */}
         <main className="flex-1 flex flex-col">
-          {/* 🔥 Role passed safely to chat page */}
           <Outlet context={{ myRole }} />
         </main>
       </div>
 
+      {/* CREATE CHANNEL MODAL */}
       <CreateChannelModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         onCreate={handleCreateChannel}
       />
 
+      {/* MEMBERS MODAL */}
       <CommunityMembersModal
         isOpen={showMembers}
         onClose={() => setShowMembers(false)}
         communityId={communityId}
         currentUserId={user?._id}
+      />
+
+      <DeleteChannelModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        communityId={communityId}
+        channel={deleteTarget}
+        onSuccess={handleDeleteSuccess}
       />
     </>
   );
