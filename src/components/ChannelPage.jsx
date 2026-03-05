@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { io } from "socket.io-client";
 import DeleteChannelModal from "../components/modals/DeleteChannelModal";
 import RenameChannelModal from "../components/modals/RenameChannelModal";
+import LeaveCommunityModal from "../components/modals/LeaveCommunityModal";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL);
 
@@ -26,6 +27,9 @@ const ChannelPage = () => {
   const [openMenu, setOpenMenu] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [renameTarget, setRenameTarget] = useState(null);
+
+  const [communityMenuOpen, setCommunityMenuOpen] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   const canManageChannels = myRole === "admin";
 
@@ -127,14 +131,48 @@ const ChannelPage = () => {
         {/* ===== LEFT SIDEBAR ===== */}
         <aside className="w-64 bg-white border-r flex flex-col">
           {/* Community Header */}
-          <div className="p-4 border-b">
-            <h2 className="font-bold text-lg">{community?.name}</h2>
+          <div className="p-4 border-b relative">
+            <div className="flex items-center justify-between">
+              <h2 className="font-bold text-lg">{community?.name}</h2>
+
+              <button
+                onClick={() => setCommunityMenuOpen((prev) => !prev)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ⋮
+              </button>
+            </div>
+
             <p
               onClick={() => setShowMembers(true)}
               className="text-xs text-slate-500 cursor-pointer hover:text-indigo-600 transition"
             >
               👥 {community?.memberCount || 0} members
             </p>
+
+            {communityMenuOpen && (
+              <div className="absolute right-4 top-12 bg-white shadow-lg border rounded-lg w-40 z-50">
+                <button
+                  onClick={() => {
+                    setShowMembers(true);
+                    setCommunityMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-slate-100"
+                >
+                  View Members
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowLeaveModal(true);
+                    setCommunityMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-red-500 hover:bg-slate-100"
+                >
+                  Leave Community
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Channels */}
@@ -247,6 +285,13 @@ const ChannelPage = () => {
         communityId={communityId}
         channel={renameTarget}
         onSuccess={handleRenameSuccess}
+      />
+
+      {/* LEAVE COMMUNITY MODAL */}
+      <LeaveCommunityModal
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        communityId={communityId}
       />
     </>
   );
