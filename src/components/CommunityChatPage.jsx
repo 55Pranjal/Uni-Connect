@@ -118,21 +118,15 @@ const CommunityChatPage = () => {
         content: text,
       });
 
-      // 🔥 backend returns { message, channelType }
-      const newMessage = res.data.message;
-
-      socketRef.current.emit("sendMessage", {
-        messageId: newMessage._id,
-        channelId,
-      });
-
       setText("");
-
-      socketRef.current.emit("typing:stop", {
-        channelId,
-        userId: user._id,
-      });
     } catch (err) {
+      const msg = err.response?.data?.message;
+
+      if (msg === "You are muted in this community") {
+        alert("You are muted and cannot send messages.");
+        return;
+      }
+
       console.error("Send failed:", err);
     }
   };
