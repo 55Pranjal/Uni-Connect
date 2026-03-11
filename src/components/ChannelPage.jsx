@@ -9,6 +9,7 @@ import { io } from "socket.io-client";
 import DeleteChannelModal from "../components/modals/DeleteChannelModal";
 import RenameChannelModal from "../components/modals/RenameChannelModal";
 import LeaveCommunityModal from "../components/modals/LeaveCommunityModal";
+import BannedMembersModal from "./modals/BannedMembersModal";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL);
 
@@ -30,6 +31,8 @@ const ChannelPage = () => {
 
   const [communityMenuOpen, setCommunityMenuOpen] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+
+  const [showBanned, setShowBanned] = useState(false);
 
   const canManageChannels = myRole === "admin";
 
@@ -164,6 +167,16 @@ const ChannelPage = () => {
 
                 <button
                   onClick={() => {
+                    setShowBanned(true);
+                    setCommunityMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-slate-100"
+                >
+                  Banned Users
+                </button>
+
+                <button
+                  onClick={() => {
                     setShowLeaveModal(true);
                     setCommunityMenuOpen(false);
                   }}
@@ -292,6 +305,14 @@ const ChannelPage = () => {
         isOpen={showLeaveModal}
         onClose={() => setShowLeaveModal(false)}
         communityId={communityId}
+      />
+
+      {/* BANNED MEMBERS MODAL */}
+      <BannedMembersModal
+        isOpen={showBanned}
+        onClose={() => setShowBanned(false)}
+        communityId={communityId}
+        myRole={myRole}
       />
     </>
   );

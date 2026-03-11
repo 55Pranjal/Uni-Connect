@@ -72,6 +72,22 @@ const CommunityMembersModal = ({
     );
   };
 
+  /* ================= UNMUTE UPDATE ================= */
+
+  const handleUnmute = async (member) => {
+    try {
+      await api.post(`/community/${communityId}/unmute/${member.userId._id}`);
+
+      setMembers((prev) =>
+        prev.map((m) =>
+          m.userId._id === member.userId._id ? { ...m, status: "active" } : m,
+        ),
+      );
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to unmute user");
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -152,7 +168,14 @@ const CommunityMembersModal = ({
                             Ban
                           </button>
 
-                          {member.status !== "muted" && (
+                          {member.status === "muted" ? (
+                            <button
+                              onClick={() => handleUnmute(member)}
+                              className="text-green-600 text-xs font-medium hover:underline"
+                            >
+                              Unmute
+                            </button>
+                          ) : (
                             <button
                               onClick={() => setMuteTarget(member)}
                               className="text-yellow-600 text-xs font-medium hover:underline"
