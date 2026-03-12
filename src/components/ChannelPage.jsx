@@ -280,6 +280,7 @@ const ChannelPage = () => {
         onClose={() => setShowMembers(false)}
         communityId={communityId}
         currentUserId={user?._id}
+        myRole={myRole}
       />
 
       {/* DELETE CHANNEL MODAL */}

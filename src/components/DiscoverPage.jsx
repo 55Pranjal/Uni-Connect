@@ -16,12 +16,30 @@ const DiscoverPage = () => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("users"); // 🔥 new
+  const [activeTab, setActiveTab] = useState("users");
 
   const { token, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
+  /* ================= HANDLE COMMUNITY DELETE ================= */
+
+  useEffect(() => {
+    const handleCommunityDelete = (e) => {
+      const deletedId = e.detail;
+
+      setResults((prev) =>
+        prev.filter((community) => community._id !== deletedId),
+      );
+    };
+
+    window.addEventListener("communityDeleted", handleCommunityDelete);
+
+    return () =>
+      window.removeEventListener("communityDeleted", handleCommunityDelete);
+  }, []);
+
   /* ================= DEBOUNCED SEARCH ================= */
+
   useEffect(() => {
     if (authLoading) return;
 
@@ -44,6 +62,7 @@ const DiscoverPage = () => {
   }, [query, token, authLoading, activeTab]);
 
   /* ================= SEARCH USERS ================= */
+
   const searchUsers = async () => {
     try {
       setLoading(true);
@@ -57,6 +76,7 @@ const DiscoverPage = () => {
   };
 
   /* ================= SEARCH COMMUNITIES ================= */
+
   const searchCommunities = async () => {
     try {
       setLoading(true);
@@ -70,6 +90,7 @@ const DiscoverPage = () => {
   };
 
   /* ================= CONNECTION HANDLERS ================= */
+
   const updateConnectionStatus = (userId, status) => {
     setResults((prev) =>
       prev.map((u) =>
