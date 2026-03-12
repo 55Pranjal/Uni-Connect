@@ -26,6 +26,20 @@ const CommunityPage = () => {
     fetchCommunities();
   }, []);
 
+  useEffect(() => {
+    const handleDelete = (e) => {
+      const id = e.detail;
+
+      setCommunities((prev) =>
+        prev.filter((community) => community._id !== id),
+      );
+    };
+
+    window.addEventListener("communityDeleted", handleDelete);
+
+    return () => window.removeEventListener("communityDeleted", handleDelete);
+  }, []);
+
   const filtered = communities.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()),
   );

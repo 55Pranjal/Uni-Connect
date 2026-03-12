@@ -3,12 +3,14 @@ import api from "../../api/api";
 import KickConfirmationModal from "../modals/KickConfirmationModal";
 import BanConfirmationModal from "../modals/BanConfirmationModal";
 import MuteConfirmationModal from "../modals/MuteConfirmationModal";
+// import TransferOwnershipModal from "./TransferOwnershipModal";
 
 const CommunityMembersModal = ({
   isOpen,
   onClose,
   communityId,
   currentUserId,
+  myRole,
 }) => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -16,6 +18,8 @@ const CommunityMembersModal = ({
   const [kickTarget, setKickTarget] = useState(null);
   const [banTarget, setBanTarget] = useState(null);
   const [muteTarget, setMuteTarget] = useState(null);
+
+  // const [transferTarget, setTransferTarget] = useState(null);
 
   const currentId = currentUserId?.toString();
 
@@ -183,6 +187,15 @@ const CommunityMembersModal = ({
                               Mute
                             </button>
                           )}
+
+                          {/* {myRole === "admin" && !isSelf && (
+                            <button
+                              onClick={() => setTransferTarget(member)}
+                              className="text-indigo-600 text-xs font-medium hover:underline"
+                            >
+                              Transfer
+                            </button>
+                          )} */}
                         </>
                       )}
                     </div>
@@ -228,6 +241,13 @@ const CommunityMembersModal = ({
         member={muteTarget}
         onSuccess={handleMuteSuccess}
       />
+      {/* TRANSFER OWNERSHIP MODAL */}
+      {/* <TransferOwnershipModal
+        isOpen={!!transferTarget}
+        onClose={() => setTransferTarget(null)}
+        communityId={communityId}
+        member={transferTarget}
+      /> */}
     </>
   );
 };
