@@ -1,31 +1,73 @@
-Uni-Connect is a full-stack real-time messaging application built with the MERN stack and Socket.io. It enables users to join community-based chat rooms and communicate instantly through a smooth, responsive interface.
+# Uni-Connect
 
-What makes this platform unique is its gamification system — users earn experience points (XP) and level up by actively helping others in conversations. This encourages meaningful engagement, collaboration, and knowledge sharing rather than passive chatting. The leveling system promotes a growth-driven community where contribution is recognized.
+A real-time community messaging platform built with the MERN stack and Socket.io.
 
-🚀 Key Features
+## Live Demo
 
-Secure JWT-based authentication
+[View Live](https://u-niconnect.netlify.app/)
 
-Real-time messaging with Socket.io
+## Screenshots
 
-Community-based chat rooms
+![Home Page](Screenshots/home.png)
 
-Message deletion functionality
+![Profile Dashboard](Screenshots/dashboard.png)
 
-Online user indicators
+![Discover Page](Screenshots/discover.png)
 
-Gamification system (XP & Level progression)
+![Chat Interface](Screenshots/chat.png)
 
-Responsive and modern UI
+## Features
 
-🛠 Tech Stack
+- Community-based chat rooms
+- Private messaging
+- Real-time communication using Socket.io
+- Gamified XP system to encourage engagement
+- Secure authentication using JWT
 
-Frontend: React, Tailwind CSS, Vite
+## Tech Stack
 
-Backend: Node.js, Express
+Frontend:
 
-Database: MongoDB
+- React
+- Tailwind CSS
 
-Real-Time Communication: Socket.io
+Backend:
 
-This project demonstrates full-stack architecture design, real-time event handling, authentication flows, and gamification logic implementation. It reflects my focus on building scalable, engagement-driven applications that combine strong backend systems with intuitive frontend experiences.
+- Node.js
+- Express.js
+
+Database:
+
+- MongoDB
+
+Real-Time Communication:
+
+- Socket.io
+
+Authentication:
+
+- JWT
+
+## Installation
+
+Clone the repository
+
+```bash
+git clone https://github.com/55Pranjal/uni-connect.git
+```
+
+Install dependencies
+
+npm install
+
+Run the development server
+
+npm run dev
+
+## Future Improvements
+
+Project collaboration feature
+
+File sharing in chats
+
+Notifications
