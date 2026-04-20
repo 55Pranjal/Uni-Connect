@@ -32,6 +32,10 @@ const Navbar = () => {
             <Link to="/communities" className="hover:text-indigo-600">
               Communities
             </Link>
+
+            <Link to="/projects" className="hover:text-indigo-600">
+              Projects
+            </Link>
           </div>
         )}
 
