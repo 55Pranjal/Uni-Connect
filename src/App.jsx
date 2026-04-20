@@ -16,6 +16,7 @@ import CreateCommunity from "./components/CreateCommunity.jsx";
 import ChannelPage from "./components/ChannelPage.jsx";
 import CommunityChatPage from "./components/CommunityChatPage.jsx";
 import BackendLoader from "./components/BackendLoader.jsx";
+import Projects from "./components/Projects.jsx";
 
 function App() {
   return (
@@ -43,7 +44,9 @@ function App() {
           <Route path="/dm/:conversationId" element={<DMChatPage />} />
           <Route path="/communities" element={<CommunityPage />} />
           <Route path="/create-community" element={<CreateCommunity />} />
+          <Route path="/projects" element={<Projects />}/>
           <Route path="/community/:communityId" element={<ChannelPage />}>
+            
             <Route path="channel/:channelId" element={<CommunityChatPage />} />
           </Route>
           <Route path="*" element={<div>NO ROUTE MATCHED</div>} />
