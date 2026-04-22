@@ -10,6 +10,9 @@ import DeleteChannelModal from "../components/modals/DeleteChannelModal";
 import RenameChannelModal from "../components/modals/RenameChannelModal";
 import LeaveCommunityModal from "../components/modals/LeaveCommunityModal";
 import BannedMembersModal from "./modals/BannedMembersModal";
+import { getHelpRequestsByChannel, createHelpRequest, claimHelpRequest, resolveHelpRequest } from "../api/helpRequests";
+import CreateHelpRequestModal from "./modals/CreateHelpRequestModal";
+import HelpRequestCard from "./cards/HelpRequestCard";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL);
 
@@ -33,6 +36,12 @@ const ChannelPage = () => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   const [showBanned, setShowBanned] = useState(false);
+
+  // Help Request UI State
+  const [activeTab, setActiveTab] = useState("chat");
+  const [helpRequests, setHelpRequests] = useState([]);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [loadingHelp, setLoadingHelp] = useState(false);
 
   const canManageChannels = myRole === "admin";
 
@@ -124,6 +133,64 @@ const ChannelPage = () => {
     setChannels((prev) =>
       prev.map((c) => (c._id === id ? { ...c, name: newName } : c)),
     );
+  };
+
+  /* ================= HELP REQUESTS ================= */
+  useEffect(() => {
+    if (channelId && activeTab === "help") {
+      fetchHelpRequests();
+    }
+  }, [channelId, activeTab]);
+
+  const fetchHelpRequests = async () => {
+    setLoadingHelp(true);
+    try {
+      const res = await getHelpRequestsByChannel(channelId);
+      setHelpRequests(res.data.helpRequests);
+    } catch (err) {
+      console.error("Failed to fetch help requests", err);
+    } finally {
+      setLoadingHelp(false);
+    }
+  };
+
+  const handleCreateHelpRequest = async (data) => {
+    try {
+      const res = await createHelpRequest({
+        ...data,
+        communityId,
+        channelId,
+      });
+      setHelpRequests([res.data.helpRequest, ...helpRequests]);
+      setShowHelpModal(false);
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to create help request");
+    }
+  };
+
+  const handleClaim = async (id) => {
+    try {
+      const res = await claimHelpRequest(id);
+      setHelpRequests((prev) =>
+        prev.map((hr) => (hr._id === id ? res.data.helpRequest : hr))
+      );
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to claim help request");
+    }
+  };
+
+  const handleResolve = async (id, data) => {
+    try {
+      const res = await resolveHelpRequest(id, data);
+      setHelpRequests((prev) =>
+        prev.map((hr) => (hr._id === id ? res.data.helpRequest : hr))
+      );
+      if (res.data.levelUpResults?.resolverNewLevel) {
+        alert("Helper levelled up to level " + res.data.levelUpResults.resolverNewLevel + "!");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to resolve help request");
+    }
   };
 
   return (
@@ -262,8 +329,73 @@ const ChannelPage = () => {
         </aside>
 
         {/* ===== MAIN CHAT AREA ===== */}
-        <main className="flex-1 flex flex-col">
-          <Outlet context={{ myRole }} />
+        <main className="flex-1 flex flex-col h-[90vh]">
+          {/* Tab Selection */}
+          {channelId && (
+            <div className="flex border-b bg-white px-6 py-3 shrink-0">
+              <div className="flex bg-slate-100 p-1 rounded-lg">
+                <button
+                  onClick={() => setActiveTab("chat")}
+                  className={`px-4 py-1 text-sm font-medium rounded-md transition ${
+                    activeTab === "chat"
+                      ? "bg-white text-indigo-700 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  💬 Chat
+                </button>
+                <button
+                  onClick={() => setActiveTab("help")}
+                  className={`px-4 py-1 text-sm font-medium rounded-md transition ${
+                    activeTab === "help"
+                      ? "bg-white text-indigo-700 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  ✋ Help Requests
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "chat" || !channelId ? (
+            <Outlet context={{ myRole }} />
+          ) : (
+            <div className="flex-1 overflow-y-auto bg-slate-50 p-6 flex flex-col">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">Help Requests</h3>
+                  <p className="text-sm text-slate-500">Ask for help or assist others in this channel.</p>
+                </div>
+                <button
+                  onClick={() => setShowHelpModal(true)}
+                  className="px-5 py-2 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition shadow-sm"
+                >
+                  + Post Request
+                </button>
+              </div>
+
+              {loadingHelp ? (
+                <div className="text-slate-500">Loading requests...</div>
+              ) : helpRequests.length === 0 ? (
+                <div className="text-slate-500 text-center py-10 bg-white border border-dashed rounded-xl border-slate-300">
+                  No help requests yet. Be the first to ask!
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {helpRequests.map((hr) => (
+                    <HelpRequestCard
+                      key={hr._id}
+                      request={hr}
+                      currentUserId={user?._id}
+                      onClaim={handleClaim}
+                      onResolve={handleResolve}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </main>
       </div>
 
@@ -314,6 +446,13 @@ const ChannelPage = () => {
         onClose={() => setShowBanned(false)}
         communityId={communityId}
         myRole={myRole}
+      />
+
+      {/* CREATE HELP REQUEST MODAL */}
+      <CreateHelpRequestModal
+        isOpen={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        onCreate={handleCreateHelpRequest}
       />
     </>
   );
