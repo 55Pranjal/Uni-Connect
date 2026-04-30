@@ -949,7 +949,7 @@ const Projects = () => {
       </div>
 
       {/* ── MAIN CONTENT ── */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 -mt-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 relative z-10 -mt-6 md:-mt-8">
 
         {/* ── FILTER CARD ── */}
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-4 md:p-5 mb-8">
@@ -957,12 +957,12 @@ const Projects = () => {
 
             {/* Tabs */}
             {isAuthenticated && (
-              <div className="flex rounded-xl overflow-hidden border border-slate-200 flex-shrink-0">
+              <div className="flex rounded-xl overflow-hidden border border-slate-200 flex-shrink-0 w-full md:w-auto">
                 {["all", "mine"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-2 text-sm font-semibold transition
+                    className={`flex-1 md:flex-none px-4 py-2 text-sm font-semibold transition
                                 ${activeTab === tab
                                   ? "bg-indigo-600 text-white"
                                   : "bg-white text-slate-600 hover:bg-slate-50"
