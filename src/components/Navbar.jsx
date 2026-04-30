@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getAvatarUrl } from "../utils/avatar";
 
 const Navbar = () => {
   const { isAuthenticated, user, logout, loading } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Optional: prevent flicker while verifying token
   if (loading) return null;
@@ -65,10 +66,34 @@ const Navbar = () => {
                   className="w-9 h-9 rounded-full ring-2 ring-indigo-500 bg-white cursor-pointer"
                 />
               </Link>
+              
+              {/* Mobile Menu Button */}
+              <button 
+                className="md:hidden text-slate-600 hover:text-indigo-600"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && isAuthenticated && (
+        <div className="md:hidden absolute top-16 left-0 right-0 bg-white border-b border-slate-200 px-6 py-4 flex flex-col gap-4 shadow-lg z-50">
+          <Link to="/" className="text-slate-600 hover:text-indigo-600 font-medium" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+          <Link to="/discover" className="text-slate-600 hover:text-indigo-600 font-medium" onClick={() => setIsMobileMenuOpen(false)}>Discover</Link>
+          <Link to="/communities" className="text-slate-600 hover:text-indigo-600 font-medium" onClick={() => setIsMobileMenuOpen(false)}>Communities</Link>
+          <Link to="/projects" className="text-slate-600 hover:text-indigo-600 font-medium" onClick={() => setIsMobileMenuOpen(false)}>Projects</Link>
+        </div>
+      )}
     </nav>
   );
 };
