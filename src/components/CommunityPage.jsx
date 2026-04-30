@@ -50,12 +50,12 @@ const CommunityPage = () => {
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h1 className="text-2xl font-bold">My Communities</h1>
 
           <button
             onClick={() => navigate("/create-community")}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
+            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
           >
             + Create Community
           </button>

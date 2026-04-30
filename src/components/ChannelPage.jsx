@@ -27,6 +27,7 @@ const ChannelPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [myRole, setMyRole] = useState(null);
   const [showMembers, setShowMembers] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const [openMenu, setOpenMenu] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -197,20 +198,25 @@ const ChannelPage = () => {
     <>
       <Navbar />
 
-      <div className="h-[90vh] flex bg-slate-100">
+      <div className="h-[90vh] flex bg-slate-100 relative overflow-hidden">
         {/* ===== LEFT SIDEBAR ===== */}
-        <aside className="w-64 bg-white border-r flex flex-col">
+        <aside className={`${showSidebar ? 'flex absolute z-40 h-full shadow-2xl' : 'hidden'} md:flex md:static w-64 bg-white border-r flex-col`}>
           {/* Community Header */}
           <div className="p-4 border-b relative">
             <div className="flex items-center justify-between">
-              <h2 className="font-bold text-lg">{community?.name}</h2>
+              <h2 className="font-bold text-lg truncate pr-2">{community?.name}</h2>
 
-              <button
-                onClick={() => setCommunityMenuOpen((prev) => !prev)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                ⋮
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCommunityMenuOpen((prev) => !prev)}
+                  className="text-slate-400 hover:text-slate-600 px-1"
+                >
+                  ⋮
+                </button>
+                <button onClick={() => setShowSidebar(false)} className="md:hidden text-slate-400 hover:text-slate-600">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
             </div>
 
             <p
@@ -267,9 +273,10 @@ const ChannelPage = () => {
                 className="relative group flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100"
               >
                 <button
-                  onClick={() =>
-                    navigate(`/community/${communityId}/channel/${ch._id}`)
-                  }
+                  onClick={() => {
+                    navigate(`/community/${communityId}/channel/${ch._id}`);
+                    setShowSidebar(false);
+                  }}
                   className={`flex-1 text-left ${
                     ch._id === channelId ? "text-indigo-600 font-medium" : ""
                   }`}
@@ -330,13 +337,23 @@ const ChannelPage = () => {
 
         {/* ===== MAIN CHAT AREA ===== */}
         <main className="flex-1 flex flex-col h-[90vh]">
-          {/* Tab Selection */}
-          {channelId && (
-            <div className="flex border-b bg-white px-6 py-3 shrink-0">
-              <div className="flex bg-slate-100 p-1 rounded-lg">
+          {/* Header Area */}
+          <div className="flex items-center gap-3 border-b bg-white px-4 md:px-6 py-3 shrink-0 overflow-x-auto min-h-[60px]">
+            {!showSidebar && (
+              <button 
+                onClick={() => setShowSidebar(true)}
+                className="md:hidden p-2 bg-white rounded-lg shadow-sm border border-slate-200 text-slate-600 shrink-0"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+              </button>
+            )}
+            
+            {/* Tab Selection */}
+            {channelId && (
+              <div className="flex bg-slate-100 p-1 rounded-lg shrink-0">
                 <button
                   onClick={() => setActiveTab("chat")}
-                  className={`px-4 py-1 text-sm font-medium rounded-md transition ${
+                  className={`px-4 py-1 text-sm font-medium rounded-md transition whitespace-nowrap ${
                     activeTab === "chat"
                       ? "bg-white text-indigo-700 shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
@@ -346,7 +363,7 @@ const ChannelPage = () => {
                 </button>
                 <button
                   onClick={() => setActiveTab("help")}
-                  className={`px-4 py-1 text-sm font-medium rounded-md transition ${
+                  className={`px-4 py-1 text-sm font-medium rounded-md transition whitespace-nowrap ${
                     activeTab === "help"
                       ? "bg-white text-indigo-700 shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
@@ -355,8 +372,8 @@ const ChannelPage = () => {
                   ✋ Help Requests
                 </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {activeTab === "chat" || !channelId ? (
             <Outlet context={{ myRole }} />
