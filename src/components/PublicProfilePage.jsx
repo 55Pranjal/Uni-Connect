@@ -81,7 +81,7 @@ const PublicProfilePage = () => {
     <>
       <Navbar />
 
-      <main className="max-w-5xl mx-auto px-6 py-10 space-y-12">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-10 space-y-12">
         {/* PROFILE HEADER */}
         <section className="flex items-center gap-5">
           <img

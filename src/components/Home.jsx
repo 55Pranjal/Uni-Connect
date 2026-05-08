@@ -48,7 +48,7 @@ const Home = () => {
     <>
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 py-10 ">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-10 ">
         <h2 className="text-2xl font-bold text-slate-800 mb-2">
           Your Connections
         </h2>
