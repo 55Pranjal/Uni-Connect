@@ -23,7 +23,7 @@ function App() {
   return (
     <BackendLoader>
       <div
-        className="min-h-screen"
+        className="min-h-screen flex flex-col w-full [&>*]:w-full"
         style={{
           backgroundColor: "#ffffff",
           backgroundImage: "url('/doodles.svg')",

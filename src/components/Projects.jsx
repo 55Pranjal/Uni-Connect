@@ -949,7 +949,7 @@ const Projects = () => {
       </div>
 
       {/* ── MAIN CONTENT ── */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 relative z-10 -mt-6 md:-mt-8">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 pb-16 relative z-10 -mt-6 md:-mt-8">
 
         {/* ── FILTER CARD ── */}
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-4 md:p-5 mb-8">

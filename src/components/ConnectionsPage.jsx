@@ -116,7 +116,7 @@ const ConnectionsPage = () => {
     <>
       <Navbar />
 
-      <main className="min-h-[70vh] px-6 pt-16">
+      <main className="flex-1 w-full px-6 pt-16">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-2xl font-bold text-slate-800 mb-6 text-center">
             Connections
