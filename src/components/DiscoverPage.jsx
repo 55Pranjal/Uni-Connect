@@ -121,90 +121,193 @@ const DiscoverPage = () => {
     <>
       <Navbar />
 
-      <main className="flex-1 w-full px-6 pt-16">
-        <div className="max-w-6xl mx-auto">
-          {/* HEADER */}
-          <h1 className="text-2xl font-bold text-slate-800 mb-6 text-center">
-            Discover
-          </h1>
-
-          {/* TABS */}
-          <div className="flex justify-center mb-6 gap-4">
-            <button
-              onClick={() => setActiveTab("users")}
-              className={`px-4 py-2 rounded-xl ${
-                activeTab === "users"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-slate-200"
-              }`}
+      <main className="flex-1 w-full pl-page">
+        {/* HEADER */}
+        <section className="max-w-7xl mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-10">
+          <div className="pl-reveal max-w-2xl">
+            <span className="pl-eyebrow">
+              <span className="dot" />
+              Discover
+            </span>
+            <h1
+              className="pl-display mt-5"
+              style={{ fontSize: "clamp(2.25rem, 5vw, 3.5rem)" }}
             >
-              Users
-            </button>
-
-            <button
-              onClick={() => setActiveTab("communities")}
-              className={`px-4 py-2 rounded-xl ${
-                activeTab === "communities"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-slate-200"
-              }`}
+              Find your{" "}
+              <span style={{ color: "var(--pl-accent)" }}>people</span>.
+            </h1>
+            <p
+              className="mt-4 text-lg"
+              style={{ color: "var(--pl-ink-2)" }}
             >
-              Communities
-            </button>
+              Search by name, skill, or community — results appear as you type.
+            </p>
           </div>
+        </section>
 
-          {/* SEARCH */}
-          <div className="relative max-w-xl mx-auto mb-10">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Search ${
-                activeTab === "users" ? "users" : "communities"
-              }...`}
-              className="w-full rounded-2xl border border-slate-300 px-5 py-4
-                         focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 pb-20">
+          {/* SEARCH + TABS */}
+          <div className="pl-reveal mb-10">
+            <div
+              className="relative flex items-center rounded-2xl"
+              style={{
+                background: "var(--pl-bg)",
+                boxShadow: "inset 0 0 0 1px var(--pl-line-2)",
+              }}
+            >
+              <svg
+                className="w-5 h-5 ml-4"
+                style={{ color: "var(--pl-ink-3)" }}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.7}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                />
+              </svg>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={`Search ${
+                  activeTab === "users" ? "students" : "communities"
+                } — name, skill, branch…`}
+                className="flex-1 px-3 py-3.5 bg-transparent outline-none text-base"
+                style={{ color: "var(--pl-ink)" }}
+              />
+              {query && (
+                <button
+                  onClick={() => setQuery("")}
+                  className="pl-btn-ghost mr-2"
+                  style={{ padding: "0.4rem 0.6rem", fontSize: 12 }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 mt-5">
+              {[
+                { key: "users", label: "Students" },
+                { key: "communities", label: "Communities" },
+              ].map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setActiveTab(t.key)}
+                  className="px-4 py-1.5 rounded-full text-sm font-medium transition"
+                  style={
+                    activeTab === t.key
+                      ? {
+                          background: "var(--pl-ink)",
+                          color: "var(--pl-bg)",
+                        }
+                      : {
+                          color: "var(--pl-ink-2)",
+                          background: "transparent",
+                        }
+                  }
+                >
+                  {t.label}
+                </button>
+              ))}
+              <span
+                className="ml-auto text-xs"
+                style={{ color: "var(--pl-ink-3)" }}
+              >
+                {results.length > 0
+                  ? `${results.length} result${results.length === 1 ? "" : "s"}`
+                  : ""}
+              </span>
+            </div>
           </div>
 
           {/* RESULTS */}
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {loading && (
-              <p className="text-slate-500 text-center col-span-full">
-                Searching...
+          {loading ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-20">
+              <span
+                className="h-7 w-7 rounded-full animate-spin"
+                style={{
+                  border: "2px solid var(--pl-line)",
+                  borderTopColor: "var(--pl-ink)",
+                }}
+              />
+              <p
+                className="text-sm"
+                style={{ color: "var(--pl-ink-3)" }}
+              >
+                Searching…
               </p>
-            )}
-
-            {!loading && results.length === 0 && query.length >= 2 && (
-              <p className="text-slate-500 text-center col-span-full">
-                No results found
+            </div>
+          ) : query.trim().length < 2 ? (
+            <div className="py-20 text-center max-w-md mx-auto">
+              <p
+                className="pl-display text-2xl"
+                style={{ color: "var(--pl-ink)" }}
+              >
+                Start typing — anything.
               </p>
-            )}
+              <p
+                className="text-sm mt-2"
+                style={{ color: "var(--pl-ink-3)" }}
+              >
+                A name, a skill ("React"), a community, or just a vibe.
+              </p>
+            </div>
+          ) : results.length === 0 ? (
+            <div className="py-20 text-center max-w-md mx-auto">
+              <p
+                className="pl-display text-2xl"
+                style={{ color: "var(--pl-ink)" }}
+              >
+                No matches for "{query}".
+              </p>
+              <p
+                className="text-sm mt-2"
+                style={{ color: "var(--pl-ink-3)" }}
+              >
+                Try a different keyword or switch sections.
+              </p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {activeTab === "users" &&
+                results.map((user, i) => (
+                  <div
+                    key={user._id}
+                    className="pl-reveal"
+                    style={{ animationDelay: `${i * 50}ms` }}
+                  >
+                    <SkillCard
+                      userId={user._id}
+                      name={user.name}
+                      dept={user.department}
+                      year={user.year}
+                      avatarSeed={user.avatarSeed}
+                      level={user.level ?? 1}
+                      skills={user.skills || []}
+                      connectionStatus={user.connectionStatus}
+                      onConnect={handleConnect}
+                      onAccept={handleAccept}
+                    />
+                  </div>
+                ))}
 
-            {/* USERS */}
-            {activeTab === "users" &&
-              results.map((user) => (
-                <SkillCard
-                  key={user._id}
-                  userId={user._id}
-                  name={user.name}
-                  dept={user.department}
-                  year={user.year}
-                  avatarSeed={user.avatarSeed}
-                  profileLevel={0}
-                  skills={user.skills || []}
-                  connectionStatus={user.connectionStatus}
-                  onConnect={handleConnect}
-                  onAccept={handleAccept}
-                />
-              ))}
-
-            {/* COMMUNITIES */}
-            {activeTab === "communities" &&
-              results.map((community) => (
-                <CommunityCard key={community._id} community={community} />
-              ))}
-          </div>
+              {activeTab === "communities" &&
+                results.map((community, i) => (
+                  <div
+                    key={community._id}
+                    className="pl-reveal"
+                    style={{ animationDelay: `${i * 50}ms` }}
+                  >
+                    <CommunityCard community={community} />
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       </main>
 

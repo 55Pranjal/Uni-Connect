@@ -145,7 +145,10 @@ const CommunityChatPage = () => {
         </h3>
 
         {typingUsers.length > 0 && (
-          <p className="text-xs text-indigo-600 mt-1 animate-pulse">
+          <p
+            className="text-xs mt-1 animate-pulse"
+            style={{ color: "var(--pl-accent-hover)" }}
+          >
             {typingUsers.map((u) => u.name).join(", ")} typing...
           </p>
         )}
@@ -168,12 +171,15 @@ const CommunityChatPage = () => {
                 <div
                   className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm shadow-sm ${
                     isMe
-                      ? "bg-indigo-600 text-white rounded-br-sm"
-                      : "bg-white text-slate-800 rounded-bl-sm"
+                      ? "bg-neutral-900 text-white rounded-br-sm"
+                      : "bg-white text-slate-800 rounded-bl-sm border border-neutral-200"
                   }`}
                 >
                   {!isMe && (
-                    <p className="text-xs font-semibold text-indigo-600 mb-1">
+                    <p
+                      className="text-xs font-semibold mb-1"
+                      style={{ color: "var(--pl-accent-hover)" }}
+                    >
                       {msg.senderId?.name || "User"}
                     </p>
                   )}
@@ -210,7 +216,7 @@ const CommunityChatPage = () => {
               isAnnouncementReadOnly ? "Read-only channel" : "Type a message..."
             }
             disabled={isAnnouncementReadOnly}
-            className={`flex-1 px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500 ${
+            className={`flex-1 px-4 py-2 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 outline-none transition ${
               isAnnouncementReadOnly ? "bg-slate-100 cursor-not-allowed" : ""
             }`}
           />
@@ -221,7 +227,7 @@ const CommunityChatPage = () => {
             className={`px-5 py-2 rounded-xl transition ${
               isAnnouncementReadOnly
                 ? "bg-slate-300 text-slate-500 cursor-not-allowed"
-                : "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "bg-neutral-900 text-white hover:bg-neutral-800"
             }`}
           >
             Send

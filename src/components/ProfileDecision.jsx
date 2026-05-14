@@ -2,7 +2,7 @@ import React from "react";
 
 const ProfileDecisionV2 = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-indigo-50 to-slate-100">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-white">
       <div className="w-full max-w-md bg-white rounded-2xl p-8 shadow-xl border border-slate-200">
         <h1 className="text-center font-extrabold text-3xl text-slate-800 mb-2">
           You’re Almost There 🎯
@@ -19,7 +19,7 @@ const ProfileDecisionV2 = () => {
             <span>30%</span>
           </div>
           <div className="w-full bg-slate-200 rounded-full h-2">
-            <div className="bg-indigo-600 h-2 rounded-full w-[30%]" />
+            <div className="bg-neutral-900 h-2 rounded-full w-[30%]" />
           </div>
         </div>
 
@@ -39,7 +39,7 @@ const ProfileDecisionV2 = () => {
         <div className="flex flex-col gap-3">
           <a
             href="/onboarding"
-            className="w-full text-center py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition"
+            className="w-full text-center py-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold transition"
           >
             Complete Profile
           </a>

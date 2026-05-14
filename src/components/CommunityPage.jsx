@@ -22,21 +22,17 @@ const CommunityPage = () => {
         setLoading(false);
       }
     };
-
     fetchCommunities();
   }, []);
 
   useEffect(() => {
     const handleDelete = (e) => {
       const id = e.detail;
-
       setCommunities((prev) =>
         prev.filter((community) => community._id !== id),
       );
     };
-
     window.addEventListener("communityDeleted", handleDelete);
-
     return () => window.removeEventListener("communityDeleted", handleDelete);
   }, []);
 
@@ -48,46 +44,138 @@ const CommunityPage = () => {
     <>
       <Navbar />
 
-      <main className="max-w-6xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-16 pl-page">
         {/* HEADER */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h1 className="text-2xl font-bold">My Communities</h1>
-
+        <div className="pl-reveal flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-10">
+          <div className="max-w-2xl">
+            <span className="pl-eyebrow">
+              <span className="dot" />
+              Your communities
+            </span>
+            <h1
+              className="pl-display mt-5"
+              style={{ fontSize: "clamp(2.25rem, 5vw, 3.5rem)" }}
+            >
+              Communities.
+            </h1>
+            <p
+              className="mt-4 text-lg"
+              style={{ color: "var(--pl-ink-2)" }}
+            >
+              Course groups, clubs, project channels — your private corners of
+              campus.
+            </p>
+          </div>
           <button
             onClick={() => navigate("/create-community")}
-            className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
+            className="pl-btn shrink-0"
           >
-            + Create Community
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.8}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Create community
           </button>
         </div>
 
         {/* SEARCH */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Search communities..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-indigo-500"
-          />
+        <div className="pl-reveal mb-10">
+          <div
+            className="relative flex items-center rounded-2xl"
+            style={{
+              background: "var(--pl-bg)",
+              boxShadow: "inset 0 0 0 1px var(--pl-line-2)",
+            }}
+          >
+            <svg
+              className="w-5 h-5 ml-4"
+              style={{ color: "var(--pl-ink-3)" }}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.7}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search your communities…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1 px-3 py-3.5 bg-transparent outline-none text-base"
+              style={{ color: "var(--pl-ink)" }}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="pl-btn-ghost mr-2"
+                style={{ padding: "0.4rem 0.6rem", fontSize: 12 }}
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
         {/* CONTENT */}
         {loading ? (
-          <p className="text-center text-slate-500">Loading...</p>
+          <div className="flex flex-col items-center justify-center gap-3 py-20">
+            <span
+              className="h-6 w-6 rounded-full animate-spin"
+              style={{
+                border: "2px solid var(--pl-line)",
+                borderTopColor: "var(--pl-ink)",
+              }}
+            />
+            <p className="text-sm" style={{ color: "var(--pl-ink-3)" }}>
+              Loading communities…
+            </p>
+          </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center text-slate-500 mt-12">
-            <p className="text-lg mb-2">No communities yet.</p>
-            <p>Create your first community and start building 🚀</p>
+          <div className="py-20 text-center max-w-md mx-auto">
+            <p
+              className="pl-display text-2xl"
+              style={{ color: "var(--pl-ink)" }}
+            >
+              {search ? "No matches." : "No communities yet."}
+            </p>
+            <p
+              className="text-sm mt-2"
+              style={{ color: "var(--pl-ink-3)" }}
+            >
+              {search
+                ? "Try a different keyword."
+                : "Create your first community and start building."}
+            </p>
+            {!search && (
+              <button
+                onClick={() => navigate("/create-community")}
+                className="pl-btn mt-6"
+              >
+                Create your first
+                <span className="arrow">→</span>
+              </button>
+            )}
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((community) => (
-              <CommunityCard
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((community, i) => (
+              <div
                 key={community._id}
-                community={community}
-                mode="my" // 🔥 Important
-              />
+                className="pl-reveal"
+                style={{ animationDelay: `${i * 50}ms` }}
+              >
+                <CommunityCard community={community} mode="my" />
+              </div>
             ))}
           </div>
         )}

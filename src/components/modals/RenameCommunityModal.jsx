@@ -49,7 +49,7 @@ const RenameCommunityModal = ({
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full border rounded-lg px-3 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full border rounded-lg px-3 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-neutral-900"
           placeholder="Community name"
         />
 
@@ -64,7 +64,7 @@ const RenameCommunityModal = ({
           <button
             onClick={handleRename}
             disabled={loading}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="px-4 py-2 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800"
           >
             {loading ? "Saving..." : "Save"}
           </button>

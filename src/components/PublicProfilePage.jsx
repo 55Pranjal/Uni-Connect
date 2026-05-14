@@ -5,15 +5,14 @@ import Footer from "../components/Footer";
 import SkillCard from "../components/cards/SkillCard";
 
 import { getAvatarUrl } from "../utils/avatar";
-import { calculateProfileLevel } from "../utils/profileLevel";
 import { useAuth } from "../context/AuthContext";
+import TierBadge from "./TierBadge";
 
 const PublicProfilePage = () => {
   const { id } = useParams();
-  const { user: loggedInUser } = useAuth(); // 🔥 single source of truth
+  const { user: loggedInUser } = useAuth();
 
   const [user, setUser] = useState(null);
-  const [cardSkills, setCardSkills] = useState([]);
   const [profileSkills, setProfileSkills] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -21,22 +20,15 @@ const PublicProfilePage = () => {
 
   const isSelf = loggedInUser?._id === id;
 
-  /* ================= FETCH PUBLIC USER ================= */
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const res = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/api/user/public/${id}`,
         );
-
         const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || "Failed to load profile");
-        }
-
+        if (!res.ok) throw new Error(data.message || "Failed to load profile");
         setUser(data);
-        setCardSkills(data.cardSkills || []);
         setProfileSkills(data.profileSkills || []);
       } catch (err) {
         setError(err.message);
@@ -44,29 +36,39 @@ const PublicProfilePage = () => {
         setLoading(false);
       }
     };
-
     fetchUser();
   }, [id]);
 
-  /* ================= LOADING ================= */
   if (loading) {
     return (
       <>
         <Navbar />
-        <div className="min-h-[60vh] flex items-center justify-center text-slate-500">
-          Loading profile…
+        <div
+          className="min-h-[60vh] flex flex-col items-center justify-center gap-3"
+          style={{ color: "var(--pl-ink-3)" }}
+        >
+          <span
+            className="h-6 w-6 rounded-full animate-spin"
+            style={{
+              border: "2px solid var(--pl-line)",
+              borderTopColor: "var(--pl-ink)",
+            }}
+          />
+          <p className="text-sm">Loading profile…</p>
         </div>
         <Footer />
       </>
     );
   }
 
-  /* ================= ERROR ================= */
   if (error || !user) {
     return (
       <>
         <Navbar />
-        <div className="min-h-[60vh] flex items-center justify-center text-red-500">
+        <div
+          className="min-h-[60vh] flex items-center justify-center"
+          style={{ color: "#dc2626" }}
+        >
           {error || "Profile not found"}
         </div>
         <Footer />
@@ -74,44 +76,101 @@ const PublicProfilePage = () => {
     );
   }
 
-  const profileLevel = calculateProfileLevel(user.skills || []);
+  const profileLevel = user.level ?? 1;
   const avatarUrl = getAvatarUrl(user.avatarSeed);
 
   return (
     <>
       <Navbar />
 
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-10 space-y-12">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-5 sm:px-8 py-10 space-y-10 pl-page">
         {/* PROFILE HEADER */}
-        <section className="flex items-center gap-5">
-          <img
-            src={avatarUrl}
-            alt={user.name}
-            className="w-20 h-20 rounded-full ring-2 ring-indigo-500 bg-white"
-          />
-
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-slate-800">{user.name}</h1>
-            <p className="text-slate-500">
-              {user.department} • {user.year}
-            </p>
-            <p className="text-sm text-indigo-600 font-semibold mt-1">
-              Profile Level: Lv. {profileLevel}
-            </p>
+        <section className="pl-reveal pt-4">
+          <div className="flex items-center justify-between mb-8">
+            <span className="pl-eyebrow">
+              <span className="dot" />
+              Public profile
+            </span>
           </div>
+          <div className="grid lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-8 flex items-center gap-6">
+              <img
+                src={avatarUrl}
+                alt={user.name}
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover"
+                style={{
+                  background: "var(--pl-surface)",
+                  boxShadow: "inset 0 0 0 1px var(--pl-line-2)",
+                }}
+              />
+              <div className="min-w-0">
+                <h1
+                  className="pl-display truncate"
+                  style={{ fontSize: "clamp(2rem, 4vw, 3rem)" }}
+                >
+                  {user.name}
+                </h1>
+                <p
+                  className="mt-2 text-base"
+                  style={{ color: "var(--pl-ink-2)" }}
+                >
+                  {user.department || "—"}{" "}
+                  {user.year ? `· Year ${user.year}` : ""}
+                </p>
+                <div className="mt-2">
+                  <TierBadge level={profileLevel} />
+                </div>
+              </div>
+            </div>
 
-          <div className="text-center">
-            <p className="text-sm text-slate-500">Connections</p>
-            <p className="text-2xl font-extrabold text-indigo-600">
-              {user.connectionsCount}
-            </p>
+            <div
+              className="lg:col-span-4 lg:pl-8"
+              style={{ borderLeft: "1px solid var(--pl-line)" }}
+            >
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <p
+                    className="pl-display tabular-nums leading-none"
+                    style={{ fontSize: "1.75rem" }}
+                  >
+                    {user.connectionsCount ?? 0}
+                  </p>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: "var(--pl-ink-3)" }}
+                  >
+                    Connections
+                  </p>
+                </div>
+                <div>
+                  <p
+                    className="pl-display tabular-nums leading-none"
+                    style={{ fontSize: "1.75rem" }}
+                  >
+                    {profileLevel}
+                  </p>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: "var(--pl-ink-3)" }}
+                  >
+                    Level
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* CARD PREVIEW */}
-        <section>
-          <h2 className="text-lg font-bold text-slate-800 mb-4">Skill Card</h2>
+        <div className="pl-rule" />
 
+        {/* CARD */}
+        <section>
+          <h2
+            className="pl-display mb-6"
+            style={{ fontSize: "clamp(1.5rem, 2.5vw, 1.875rem)" }}
+          >
+            Skill card
+          </h2>
           <div className="max-w-sm">
             <SkillCard
               key={user._id}
@@ -120,64 +179,114 @@ const PublicProfilePage = () => {
               dept={user.department}
               year={user.year}
               avatarSeed={user.avatarSeed || user._id}
+              level={profileLevel}
               skills={user.skills || []}
               connectionStatus={user.connectionStatus}
-              isSelf={isSelf} // 🔥 now correct
+              isSelf={isSelf}
             />
           </div>
         </section>
 
         {/* ABOUT */}
         <section>
-          <h2 className="text-lg font-bold text-slate-800 mb-3">About</h2>
-
-          <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-3">
-            <p className="text-slate-700">{user.bio || "No bio added."}</p>
-
-            <div className="flex gap-4 text-sm">
-              {user.github && (
-                <a
-                  href={user.github}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-indigo-600 hover:underline"
+          <h2
+            className="pl-display mb-6"
+            style={{ fontSize: "clamp(1.5rem, 2.5vw, 1.875rem)" }}
+          >
+            About
+          </h2>
+          <div className="pl-card p-5 space-y-3">
+            <p
+              className="leading-relaxed"
+              style={{ color: "var(--pl-ink-2)" }}
+            >
+              {user.bio || (
+                <span
+                  className="italic"
+                  style={{ color: "var(--pl-ink-3)" }}
                 >
-                  GitHub
-                </a>
+                  No bio added.
+                </span>
               )}
-              {user.linkedin && (
-                <a
-                  href={user.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-indigo-600 hover:underline"
-                >
-                  LinkedIn
-                </a>
-              )}
-            </div>
+            </p>
+            {(user.github || user.linkedin) && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {user.github && (
+                  <a
+                    href={user.github}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition"
+                    style={{
+                      color: "var(--pl-ink-2)",
+                      background: "var(--pl-surface)",
+                      boxShadow: "inset 0 0 0 1px var(--pl-line)",
+                    }}
+                  >
+                    GitHub
+                  </a>
+                )}
+                {user.linkedin && (
+                  <a
+                    href={user.linkedin}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition"
+                    style={{
+                      color: "var(--pl-ink-2)",
+                      background: "var(--pl-surface)",
+                      boxShadow: "inset 0 0 0 1px var(--pl-line)",
+                    }}
+                  >
+                    LinkedIn
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </section>
 
         {/* SKILLS */}
         <section>
-          <h2 className="text-lg font-bold text-slate-800 mb-3">Skills</h2>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            {profileSkills.length === 0 ? (
-              <p className="text-slate-500">No skills added.</p>
-            ) : (
-              profileSkills.map((skill) => (
+          <h2
+            className="pl-display mb-6"
+            style={{ fontSize: "clamp(1.5rem, 2.5vw, 1.875rem)" }}
+          >
+            Skills
+          </h2>
+          {profileSkills.length === 0 ? (
+            <div
+              className="pl-card p-8 text-center text-sm"
+              style={{ color: "var(--pl-ink-3)" }}
+            >
+              No skills added.
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-3">
+              {profileSkills.map((skill) => (
                 <div
                   key={skill.name}
-                  className="bg-white border border-slate-200 rounded-xl p-4 flex justify-between"
+                  className="pl-card p-4 flex justify-between items-center"
                 >
-                  <span>{skill.name}</span>
-                  <span className="font-semibold">Lv. {skill.level}</span>
+                  <span
+                    className="font-medium"
+                    style={{ color: "var(--pl-ink)" }}
+                  >
+                    {skill.name}
+                  </span>
+                  <span
+                    className="text-sm font-semibold px-2.5 py-1 rounded-lg"
+                    style={{
+                      background: "var(--pl-accent-soft)",
+                      color: "var(--pl-accent-hover)",
+                    }}
+                  >
+                    Lv {skill.level}
+                  </span>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </section>
       </main>
 
