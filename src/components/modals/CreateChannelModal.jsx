@@ -61,7 +61,7 @@ const CreateChannelModal = ({ isOpen, onClose, onCreate }) => {
 
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg"
+            className="px-4 py-2 text-sm bg-neutral-900 text-white rounded-lg"
           >
             Create
           </button>

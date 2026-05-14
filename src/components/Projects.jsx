@@ -26,15 +26,15 @@ const ALL_TAGS = [
 ];
 
 const STATUS_STYLES = {
-  open: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-  "in-progress": "bg-amber-100 text-amber-700 border border-amber-200",
-  completed: "bg-slate-100 text-slate-600 border border-slate-200",
+  open: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  "in-progress": "bg-amber-50 text-amber-700 border border-amber-200",
+  completed: "bg-neutral-100 text-neutral-600 border border-neutral-200",
 };
 
 const COLLAB_STYLES = {
-  none: { label: "Collaborate", cls: "bg-violet-600 hover:bg-violet-700 text-white" },
-  pending: { label: "Pending…", cls: "bg-slate-200 text-slate-500 cursor-not-allowed" },
-  accepted: { label: "Collaborator ✓", cls: "bg-emerald-100 text-emerald-700 border border-emerald-300" },
+  none: { label: "Collaborate", cls: "pl-btn !px-3 !py-1.5 !text-xs" },
+  pending: { label: "Pending…", cls: "bg-neutral-100 text-neutral-500 cursor-not-allowed px-3 py-1.5 rounded-xl text-xs font-medium" },
+  accepted: { label: "Collaborator ✓", cls: "bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-medium" },
 };
 
 const EMPTY_FORM = {
@@ -52,7 +52,14 @@ const EMPTY_FORM = {
    SMALL HELPERS
 ═══════════════════════════════════════════════════════════════ */
 const Tag = ({ label }) => (
-  <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 font-medium">
+  <span
+    className="text-xs px-2 py-0.5 rounded-full font-medium"
+    style={{
+      background: "var(--pl-accent-soft)",
+      color: "var(--pl-accent-hover)",
+      border: "1px solid rgba(255, 90, 31, 0.2)",
+    }}
+  >
     {label}
   </span>
 );
@@ -65,7 +72,7 @@ const StatusBadge = ({ status }) => (
 
 const Spinner = ({ size = 5 }) => (
   <svg
-    className={`animate-spin h-${size} w-${size} text-indigo-500`}
+    className={`animate-spin h-${size} w-${size} text-neutral-700`}
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
@@ -97,16 +104,15 @@ const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete,
   return (
     <article
       onClick={() => onOpen(project)}
-      className="group relative bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl
-                 hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col cursor-pointer"
+      className="group pl-card pl-card-hover overflow-hidden flex flex-col cursor-pointer p-0"
     >
-      {/* Top accent bar */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500" />
-
       <div className="p-5 flex flex-col flex-1 gap-3">
         {/* Header row */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-bold text-slate-800 text-base leading-snug group-hover:text-indigo-600 transition-colors line-clamp-2">
+          <h3
+            className="font-semibold text-base leading-snug transition-colors line-clamp-2"
+            style={{ color: "var(--pl-ink)", letterSpacing: "-0.01em" }}
+          >
             {project.title}
           </h3>
           <StatusBadge status={project.status} />
@@ -146,7 +152,7 @@ const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete,
               <img
                 src={ownerAvatarUrl}
                 alt={project.owner?.name || "Owner"}
-                className="w-7 h-7 rounded-full ring-2 ring-indigo-200 flex-shrink-0"
+                className="w-7 h-7 rounded-full ring-2 ring-neutral-200 flex-shrink-0"
               />
               <span className="text-xs font-medium text-slate-600 truncate">
                 {project.owner?.name || "Unknown"}
@@ -158,7 +164,7 @@ const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete,
               const count = project.collaborationRequests?.filter((r) => r.status === "accepted").length || 0;
               return count > 0 ? (
                 <span
-                  className="flex-shrink-0 text-xs bg-violet-50 text-violet-700 px-2.5 py-0.5 rounded-full font-medium border border-violet-200 flex items-center gap-1"
+                  className="flex-shrink-0 text-xs bg-orange-50 text-orange-700 px-2.5 py-0.5 rounded-full font-medium border border-orange-200 flex items-center gap-1"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -176,8 +182,8 @@ const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete,
               <>
                 <button
                   onClick={() => onEdit(project)}
-                  className="flex-1 text-xs px-3 py-1.5 rounded-lg border border-indigo-200 text-indigo-600
-                             hover:bg-indigo-50 transition font-medium"
+                  className="flex-1 text-xs px-3 py-1.5 rounded-lg border border-neutral-200 text-neutral-900
+                             hover:bg-neutral-50 transition font-medium"
                 >
                   Edit
                 </button>
@@ -260,7 +266,7 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
     >
       <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Gradient header */}
-        <div className="h-2 rounded-t-3xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500" />
+        <div className="h-2 rounded-t-3xl bg-neutral-900" />
 
         <div className="p-6 md:p-8">
           {/* Close */}
@@ -279,7 +285,7 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
 
           {/* Owner info */}
           <div className="flex items-center gap-3 mb-5 pb-5 border-b border-slate-100">
-            <img src={ownerAvatarUrl} alt={project.owner?.name} className="w-10 h-10 rounded-full ring-2 ring-indigo-300" />
+            <img src={ownerAvatarUrl} alt={project.owner?.name} className="w-10 h-10 rounded-full ring-2 ring-neutral-300" />
             <div>
               <p className="text-sm font-semibold text-slate-700">{project.owner?.name || "Unknown"}</p>
               <p className="text-xs text-slate-400">{project.owner?.department} {project.owner?.year && `• Year ${project.owner.year}`}</p>
@@ -305,8 +311,8 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
               </div>
             )}
             {project.rolesNeeded && (
-              <div className="bg-violet-50 rounded-xl p-3 border border-violet-100">
-                <p className="text-xs text-violet-400 font-medium uppercase tracking-wide mb-1">Roles Needed</p>
+              <div className="bg-orange-50 rounded-xl p-3 border border-orange-100">
+                <p className="text-xs text-orange-400 font-medium uppercase tracking-wide mb-1">Roles Needed</p>
                 <p className="text-slate-700 font-medium">{project.rolesNeeded}</p>
               </div>
             )}
@@ -317,7 +323,7 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 className="bg-slate-50 rounded-xl p-3 border border-slate-100 flex items-center gap-2
-                           hover:bg-slate-100 transition text-indigo-600 font-medium"
+                           hover:bg-slate-100 transition text-neutral-900 font-medium"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.23c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.72.08-.72 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.42-1.29.76-1.59-2.67-.3-5.47-1.34-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 6.8c1.02.005 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.6-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
@@ -392,7 +398,7 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
           {acceptedCollabs.length > 0 && (
             <div className="mb-5">
               <h4 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-5-4m-4 6H2v-2a4 4 0 015-4m4 0a4 4 0 100-8 4 4 0 010 8zm6-8a3 3 0 11-6 0 3 3 0 016 0zM7 8a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 Collaborators
@@ -402,13 +408,13 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                 {acceptedCollabs.map((req) => (
                   <div
                     key={req._id}
-                    className="flex items-center justify-between p-2.5 bg-violet-50 rounded-xl border border-violet-100"
+                    className="flex items-center justify-between p-2.5 bg-orange-50 rounded-xl border border-orange-100"
                   >
                     <div className="flex items-center gap-2.5">
                       <img
                         src={getAvatarUrl(req.user?.avatarSeed || "default")}
                         alt={req.user?.name}
-                        className="w-8 h-8 rounded-full ring-2 ring-violet-200 flex-shrink-0"
+                        className="w-8 h-8 rounded-full ring-2 ring-orange-200 flex-shrink-0"
                       />
                       <div>
                         <p className="text-sm font-semibold text-slate-700">{req.user?.name}</p>
@@ -443,7 +449,7 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                   onClick={handleChatClick}
                   disabled={chatLoading}
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl
-                             bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold
+                             bg-neutral-900 text-white font-semibold
                              text-sm hover:opacity-90 transition shadow-md disabled:opacity-60"
                 >
                   {chatLoading ? (
@@ -477,8 +483,8 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                 <>
                   <button
                     onClick={() => { onClose(); onEdit(project); }}
-                    className="flex-1 py-2.5 rounded-xl border border-indigo-200 text-indigo-600
-                               hover:bg-indigo-50 transition font-medium text-sm"
+                    className="flex-1 py-2.5 rounded-xl border border-neutral-200 text-neutral-900
+                               hover:bg-neutral-50 transition font-medium text-sm"
                   >
                     Edit Project
                   </button>
@@ -496,7 +502,7 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                   onClick={() => onCollabToggle(project._id, myRequest?._id, collabStatus)}
                   className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition
                               ${collabStatus === "none"
-                                ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:opacity-90 shadow-md"
+                                ? "bg-neutral-900 text-white hover:opacity-90 shadow-md"
                                 : collabStatus === "pending"
                                 ? "bg-slate-100 text-slate-400 cursor-not-allowed"
                                 : "bg-emerald-100 text-emerald-700 border border-emerald-200"
@@ -555,7 +561,7 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
       style={{ background: "rgba(15,15,30,0.65)", backdropFilter: "blur(6px)" }}
     >
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
-        <div className="h-2 rounded-t-3xl bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500" />
+        <div className="h-2 rounded-t-3xl bg-neutral-900" />
 
         <div className="p-6 md:p-8">
           <div className="flex items-center justify-between mb-6">
@@ -578,7 +584,7 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
                 onChange={(e) => set("title", e.target.value)}
                 placeholder="e.g. AI-Powered Campus Navigation"
                 className="mt-1 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50"
+                           focus:outline-none focus:ring-2 focus:ring-neutral-400 bg-slate-50"
               />
             </div>
 
@@ -591,7 +597,7 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
                 rows={4}
                 placeholder="Tell students what this project is about, what problems it solves…"
                 className="mt-1 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50 resize-none"
+                           focus:outline-none focus:ring-2 focus:ring-neutral-400 bg-slate-50 resize-none"
               />
             </div>
 
@@ -605,8 +611,8 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
                     onClick={() => set("status", s)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition
                                 ${form.status === s
-                                  ? "bg-indigo-600 text-white border-indigo-600"
-                                  : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300"
+                                  ? "bg-neutral-900 text-white border-neutral-900"
+                                  : "bg-white text-slate-600 border-slate-200 hover:border-neutral-400"
                                 }`}
                   >
                     {s}
@@ -625,8 +631,8 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
                     onClick={() => toggleTag(tag)}
                     className={`px-3 py-1 rounded-full text-xs font-medium border transition
                                 ${form.tags.includes(tag)
-                                  ? "bg-violet-600 text-white border-violet-600"
-                                  : "bg-white text-slate-600 border-slate-200 hover:border-violet-400"
+                                  ? "bg-neutral-900 text-white border-neutral-900"
+                                  : "bg-white text-slate-600 border-slate-200 hover:border-neutral-400"
                                 }`}
                   >
                     {tag}
@@ -643,7 +649,7 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
                 onChange={(e) => set("techStack", e.target.value)}
                 placeholder="React, Node.js, MongoDB…"
                 className="mt-1 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50"
+                           focus:outline-none focus:ring-2 focus:ring-neutral-400 bg-slate-50"
               />
             </div>
 
@@ -655,7 +661,7 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
                 onChange={(e) => set("rolesNeeded", e.target.value)}
                 placeholder="Frontend dev, ML engineer, UI designer…"
                 className="mt-1 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50"
+                           focus:outline-none focus:ring-2 focus:ring-neutral-400 bg-slate-50"
               />
             </div>
 
@@ -668,7 +674,7 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
                   onChange={(e) => set("repoUrl", e.target.value)}
                   placeholder="https://github.com/…"
                   className="mt-1 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm
-                             focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50"
+                             focus:outline-none focus:ring-2 focus:ring-neutral-400 bg-slate-50"
                 />
               </div>
               <div>
@@ -678,7 +684,7 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
                   onChange={(e) => set("liveUrl", e.target.value)}
                   placeholder="https://myapp.vercel.app"
                   className="mt-1 w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm
-                             focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50"
+                             focus:outline-none focus:ring-2 focus:ring-neutral-400 bg-slate-50"
                 />
               </div>
             </div>
@@ -695,7 +701,7 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600
+              className="flex-1 py-2.5 rounded-xl bg-neutral-900
                          text-white font-semibold text-sm hover:opacity-90 transition shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {saving ? <><Spinner size={4} /> Saving…</> : isEdit ? "Save Changes" : "Post Project"}
@@ -908,45 +914,50 @@ const Projects = () => {
       <Navbar />
 
       {/* ── PAGE HEADER ── */}
-      <div
-        className="relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%)",
-          paddingTop: "4rem",
-          paddingBottom: "5rem",
-        }}
-      >
-        {/* Decorative blobs */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full opacity-20"
-               style={{ background: "radial-gradient(circle, #818cf8, transparent)" }} />
-          <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full opacity-20"
-               style={{ background: "radial-gradient(circle, #c084fc, transparent)" }} />
+      <section className="relative pl-page" style={{ background: "var(--pl-bg)" }}>
+        <div className="pl-soft-glow" />
+        <div className="relative max-w-7xl mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-10">
+          <div className="pl-reveal flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+            <div className="max-w-2xl">
+              <span className="pl-eyebrow">
+                <span className="dot" />
+                Project Hub
+              </span>
+              <h1
+                className="pl-display mt-5"
+                style={{ fontSize: "clamp(2.25rem, 5vw, 3.5rem)" }}
+              >
+                Build something{" "}
+                <span style={{ color: "var(--pl-accent)" }}>real</span>.
+              </h1>
+              <p
+                className="mt-4 text-lg"
+                style={{ color: "var(--pl-ink-2)" }}
+              >
+                Pitch what you're working on. Find teammates. Open a private
+                room and ship.
+              </p>
+            </div>
+            {isAuthenticated && (
+              <button
+                onClick={() => { setFormProject(null); setShowForm(true); }}
+                className="pl-btn shrink-0"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Post a project
+              </button>
+            )}
+          </div>
         </div>
-
-        <div className="relative max-w-5xl mx-auto px-6 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-3 tracking-tight">
-            Project Hub
-          </h1>
-          <p className="text-indigo-100 text-lg max-w-xl mx-auto mb-8">
-            Discover student projects, find collaborators, and build something amazing together.
-          </p>
-
-          {isAuthenticated && (
-            <button
-              onClick={() => { setFormProject(null); setShowForm(true); }}
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-2xl bg-white text-indigo-700
-                         font-bold text-sm shadow-xl hover:shadow-2xl hover:-translate-y-0.5
-                         transition-all duration-200"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Post a Project
-            </button>
-          )}
-        </div>
-      </div>
+      </section>
 
       {/* ── MAIN CONTENT ── */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 pb-16 relative z-10 -mt-6 md:-mt-8">
@@ -964,7 +975,7 @@ const Projects = () => {
                     onClick={() => setActiveTab(tab)}
                     className={`flex-1 md:flex-none px-4 py-2 text-sm font-semibold transition
                                 ${activeTab === tab
-                                  ? "bg-indigo-600 text-white"
+                                  ? "bg-neutral-900 text-white"
                                   : "bg-white text-slate-600 hover:bg-slate-50"
                                 }`}
                   >
@@ -988,7 +999,7 @@ const Projects = () => {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search projects by title or description…"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm
-                           focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-slate-50"
+                           focus:outline-none focus:ring-2 focus:ring-neutral-400 bg-slate-50"
               />
             </div>
 
@@ -997,7 +1008,7 @@ const Projects = () => {
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50
-                         focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-600 font-medium"
+                         focus:outline-none focus:ring-2 focus:ring-neutral-400 text-slate-600 font-medium"
             >
               <option value="all">All Status</option>
               {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -1008,7 +1019,7 @@ const Projects = () => {
               value={filterTag}
               onChange={(e) => setFilterTag(e.target.value)}
               className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50
-                         focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-600 font-medium"
+                         focus:outline-none focus:ring-2 focus:ring-neutral-400 text-slate-600 font-medium"
             >
               <option value="all">All Tags</option>
               {ALL_TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -1036,7 +1047,7 @@ const Projects = () => {
             <p className="text-red-400 text-sm mb-4">{fetchError}</p>
             <button
               onClick={fetchProjects}
-              className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition"
+              className="px-5 py-2 rounded-xl bg-neutral-900 text-white text-sm font-semibold hover:bg-neutral-800 transition"
             >
               Retry
             </button>
@@ -1055,7 +1066,7 @@ const Projects = () => {
             {isAuthenticated && (
               <button
                 onClick={() => { setFormProject(null); setShowForm(true); }}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600
+                className="px-6 py-2.5 rounded-xl bg-neutral-900
                            text-white font-semibold text-sm shadow-md hover:opacity-90 transition"
               >
                 Post the first project

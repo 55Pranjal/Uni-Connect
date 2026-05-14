@@ -13,6 +13,7 @@ import BannedMembersModal from "./modals/BannedMembersModal";
 import { getHelpRequestsByChannel, createHelpRequest, claimHelpRequest, resolveHelpRequest } from "../api/helpRequests";
 import CreateHelpRequestModal from "./modals/CreateHelpRequestModal";
 import HelpRequestCard from "./cards/HelpRequestCard";
+import { notifyXp, refreshXp } from "./XpToastHost";
 
 const socket = io(import.meta.env.VITE_BACKEND_URL);
 
@@ -186,11 +187,15 @@ const ChannelPage = () => {
       setHelpRequests((prev) =>
         prev.map((hr) => (hr._id === id ? res.data.helpRequest : hr))
       );
-      if (res.data.levelUpResults?.resolverNewLevel) {
-        alert("Helper levelled up to level " + res.data.levelUpResults.resolverNewLevel + "!");
+      const newLevel = res.data.levelUpResults?.resolverNewLevel;
+      if (newLevel) {
+        notifyXp(`Helper levelled up to Lv. ${newLevel}!`, { kind: "levelup" });
+      } else {
+        notifyXp("Help request resolved — XP awarded.");
       }
+      refreshXp();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to resolve help request");
+      notifyXp(err.response?.data?.message || "Failed to resolve help request");
     }
   };
 
@@ -221,7 +226,7 @@ const ChannelPage = () => {
 
             <p
               onClick={() => setShowMembers(true)}
-              className="text-xs text-slate-500 cursor-pointer hover:text-indigo-600 transition"
+              className="text-xs text-slate-500 cursor-pointer hover:text-neutral-900 transition"
             >
               👥 {community?.memberCount || 0} members
             </p>
@@ -278,7 +283,7 @@ const ChannelPage = () => {
                     setShowSidebar(false);
                   }}
                   className={`flex-1 text-left ${
-                    ch._id === channelId ? "text-indigo-600 font-medium" : ""
+                    ch._id === channelId ? "text-neutral-900 font-medium bg-orange-50" : ""
                   }`}
                 >
                   # {ch.name}
@@ -327,7 +332,7 @@ const ChannelPage = () => {
             <div className="p-3 border-t">
               <button
                 onClick={() => setShowModal(true)}
-                className="w-full py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                className="w-full py-2 text-sm bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition"
               >
                 + Add Channel
               </button>
@@ -355,7 +360,7 @@ const ChannelPage = () => {
                   onClick={() => setActiveTab("chat")}
                   className={`px-4 py-1 text-sm font-medium rounded-md transition whitespace-nowrap ${
                     activeTab === "chat"
-                      ? "bg-white text-indigo-700 shadow-sm"
+                      ? "bg-white text-neutral-900 shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
@@ -365,7 +370,7 @@ const ChannelPage = () => {
                   onClick={() => setActiveTab("help")}
                   className={`px-4 py-1 text-sm font-medium rounded-md transition whitespace-nowrap ${
                     activeTab === "help"
-                      ? "bg-white text-indigo-700 shadow-sm"
+                      ? "bg-white text-neutral-900 shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
@@ -386,7 +391,7 @@ const ChannelPage = () => {
                 </div>
                 <button
                   onClick={() => setShowHelpModal(true)}
-                  className="px-5 py-2 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition shadow-sm"
+                  className="px-5 py-2 bg-neutral-900 text-white font-medium rounded-xl hover:bg-neutral-800 transition shadow-sm"
                 >
                   + Post Request
                 </button>

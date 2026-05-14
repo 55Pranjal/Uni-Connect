@@ -18,19 +18,15 @@ import CommunityChatPage from "./components/CommunityChatPage.jsx";
 import BackendLoader from "./components/BackendLoader.jsx";
 import Projects from "./components/Projects.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import XpToastHost from "./components/XpToastHost.jsx";
+import XpSocket from "./components/XpSocket.jsx";
 
 function App() {
   return (
     <BackendLoader>
       <div
-        className="min-h-screen flex flex-col w-full [&>*]:w-full"
-        style={{
-          backgroundColor: "#ffffff",
-          backgroundImage: "url('/doodles.svg')",
-          backgroundRepeat: "repeat",
-          backgroundSize: "320px",
-          backgroundAttachment: "fixed",
-        }}
+        className="min-h-screen flex flex-col w-full [&>*]:w-full pl-page"
+        style={{ background: "var(--pl-bg)" }}
       >
         <Routes>
           {/* Public Routes */}
@@ -58,6 +54,8 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<div>NO ROUTE MATCHED</div>} />
         </Routes>
+        <XpToastHost />
+        <XpSocket />
       </div>
     </BackendLoader>
   );

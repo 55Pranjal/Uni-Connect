@@ -163,7 +163,10 @@ const DMChatPage = () => {
               <h3 className="font-semibold">Direct Message</h3>
 
               {typingNames.length > 0 && (
-                <p className="text-xs text-indigo-600 animate-pulse mt-1">
+                <p
+                  className="text-xs animate-pulse mt-1"
+                  style={{ color: "var(--pl-accent-hover)" }}
+                >
                   {typingNames.join(", ")} typing...
                 </p>
               )}
@@ -192,12 +195,15 @@ const DMChatPage = () => {
                     <div
                       className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm shadow-sm ${
                         isMe
-                          ? "bg-indigo-600 text-white rounded-br-sm"
-                          : "bg-white text-slate-800 rounded-bl-sm"
+                          ? "bg-neutral-900 text-white rounded-br-sm"
+                          : "bg-white text-slate-800 rounded-bl-sm border border-neutral-200"
                       }`}
                     >
                       {!isMe && (
-                        <p className="text-xs font-semibold text-indigo-600 mb-1">
+                        <p
+                          className="text-xs font-semibold mb-1"
+                          style={{ color: "var(--pl-accent-hover)" }}
+                        >
                           {senderName}
                         </p>
                       )}
@@ -218,7 +224,7 @@ const DMChatPage = () => {
             {/* INPUT */}
             <div className="px-4 py-3 border-t flex gap-3">
               <input
-                className="flex-1 rounded-xl border px-4 py-2 focus:ring-2 focus:ring-indigo-500"
+                className="flex-1 rounded-xl border px-4 py-2 focus:ring-2 focus:ring-neutral-900"
                 value={text}
                 onChange={(e) => handleTyping(e.target.value)}
                 placeholder="Type a message..."
@@ -228,7 +234,7 @@ const DMChatPage = () => {
               <button
                 onClick={sendMessage}
                 disabled={!isSocketReady}
-                className="px-5 py-2 bg-indigo-600 text-white rounded-xl disabled:opacity-50 hover:bg-indigo-700 transition"
+                className="px-5 py-2 bg-neutral-900 text-white rounded-xl disabled:opacity-50 hover:bg-neutral-800 transition"
               >
                 Send
               </button>

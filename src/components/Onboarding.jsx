@@ -60,7 +60,7 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-indigo-50 to-slate-100">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-white">
       <div className="w-full max-w-md bg-white rounded-2xl p-8 shadow-xl border border-slate-200">
         <h1 className="text-center font-extrabold text-2xl text-slate-800 mb-1">
           Complete Your Profile
@@ -114,7 +114,7 @@ const Onboarding = () => {
                   className={`px-3 py-1.5 rounded-full text-sm border transition
                     ${
                       formData.interests.includes(interest)
-                        ? "bg-indigo-600 text-white border-indigo-600"
+                        ? "bg-neutral-900 text-white border-neutral-900"
                         : "bg-white text-slate-600 border-slate-300"
                     }`}
                 >
@@ -215,7 +215,7 @@ const Onboarding = () => {
           {step < 4 ? (
             <button
               onClick={() => setStep(step + 1)}
-              className="px-6 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
+              className="px-6 py-2 rounded-lg bg-neutral-900 text-white font-semibold hover:bg-neutral-800"
             >
               Next
             </button>
@@ -223,7 +223,7 @@ const Onboarding = () => {
             <button
               onClick={handleSubmit}
               disabled={!token}
-              className="px-6 py-2 rounded-lg bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-50"
+              className="px-6 py-2 rounded-lg bg-neutral-900 text-white font-semibold hover:bg-neutral-800 disabled:opacity-50"
             >
               Finish
             </button>

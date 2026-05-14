@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Logomark } from "./Navbar";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -11,7 +12,6 @@ const Signup = () => {
     email: "",
     password: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +24,6 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const res = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/api/auth/signup`,
@@ -34,21 +33,10 @@ const Signup = () => {
           body: JSON.stringify(formData),
         },
       );
-
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Signup failed");
-      }
-
-      if (!data.user || !data.token) {
-        throw new Error("Invalid signup response");
-      }
-
-      // 🔥 Use context login (handles storage + state)
+      if (!res.ok) throw new Error(data.message || "Signup failed");
+      if (!data.user || !data.token) throw new Error("Invalid signup response");
       login(data.token, data.user);
-
-      // ✅ Redirect to onboarding without full reload
       navigate("/ProfileDecision");
     } catch (err) {
       setError(err.message);
@@ -58,82 +46,156 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-slate-100">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-8 shadow-lg">
-        <h1 className="text-center font-extrabold text-3xl sm:text-4xl text-slate-800 mb-6">
-          Create Account
-        </h1>
+    <div
+      className="pl-page min-h-screen relative flex items-center justify-center px-5 py-12"
+      style={{ background: "var(--pl-bg)" }}
+    >
+      <div className="pl-soft-glow" />
 
-        <p className="text-center text-slate-500 mb-8">
-          Sign up to get started with your account
-        </p>
+      <div className="w-full max-w-sm pl-reveal relative">
+        <Link to="/" className="flex items-center gap-2 justify-center mb-10">
+          <Logomark />
+          <span
+            className="font-semibold"
+            style={{ fontSize: 17, letterSpacing: "-0.02em" }}
+          >
+            UniConnect
+          </span>
+        </Link>
+
+        <div className="text-center mb-8">
+          <span className="pl-eyebrow">
+            <span className="dot" />
+            Free forever for students
+          </span>
+          <h1
+            className="pl-display mt-5"
+            style={{ fontSize: "clamp(2rem, 4vw, 2.5rem)" }}
+          >
+            Create your account.
+          </h1>
+          <p
+            className="mt-3 text-base"
+            style={{ color: "var(--pl-ink-2)" }}
+          >
+            One minute to set up. A campus to discover.
+          </p>
+        </div>
 
         {error && (
-          <p className="text-red-500 text-sm text-center mb-4">{error}</p>
+          <p
+            className="text-sm px-4 py-2.5 rounded-xl mb-5 text-center"
+            style={{
+              color: "var(--pl-accent-hover)",
+              background: "var(--pl-accent-soft)",
+              border: "1px solid rgba(255, 90, 31, 0.25)",
+            }}
+          >
+            {error}
+          </p>
         )}
 
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <input
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Field
+            label="Full name"
             type="text"
             name="name"
-            placeholder="Full Name"
             value={formData.name}
             onChange={handleChange}
-            required
-            className="w-full rounded-lg px-4 py-3 bg-white text-slate-700 placeholder-slate-400 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            placeholder="Ada Lovelace"
           />
-
-          <input
+          <Field
+            label="Email"
             type="email"
             name="email"
-            placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            required
-            className="w-full rounded-lg px-4 py-3 bg-white text-slate-700 placeholder-slate-400 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            placeholder="you@college.edu"
           />
-
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full rounded-lg px-4 py-3 pr-12 bg-white text-slate-700 placeholder-slate-400 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-            />
-
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-indigo-600"
-            >
-              {showPassword ? "🙈" : "👁️"}
-            </button>
-          </div>
+          <Field
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="At least 8 characters"
+            suffix={
+              <button
+                type="button"
+                onClick={() => setShowPassword((p) => !p)}
+                className="text-xs font-medium"
+                style={{ color: "var(--pl-ink-3)" }}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            }
+          />
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-transform transform hover:scale-[1.02] disabled:opacity-70"
+            className="pl-btn w-full justify-center mt-2"
+            style={{ padding: "0.85rem 1.25rem", fontSize: 15 }}
           >
-            {loading ? "Creating Account..." : "Sign Up"}
+            {loading ? (
+              <>
+                <span
+                  className="h-3.5 w-3.5 rounded-full animate-spin"
+                  style={{
+                    border: "2px solid rgba(255,255,255,0.3)",
+                    borderTopColor: "white",
+                  }}
+                />
+                Creating account…
+              </>
+            ) : (
+              <>
+                Create account
+                <span className="arrow">→</span>
+              </>
+            )}
           </button>
         </form>
 
-        <p className="text-sm text-center text-slate-500 mt-6">
+        <p
+          className="text-sm text-center mt-8"
+          style={{ color: "var(--pl-ink-3)" }}
+        >
           Already have an account?{" "}
           <Link
             to="/login"
-            className="text-indigo-600 hover:text-indigo-700 font-semibold underline"
+            className="font-semibold"
+            style={{ color: "var(--pl-ink)" }}
           >
-            Login here
+            Sign in →
           </Link>
         </p>
       </div>
     </div>
   );
 };
+
+const Field = ({ label, suffix, ...inputProps }) => (
+  <label className="block">
+    <span
+      className="block text-xs font-medium mb-1.5"
+      style={{ color: "var(--pl-ink-2)" }}
+    >
+      {label}
+    </span>
+    <span
+      className="flex items-center rounded-xl bg-white"
+      style={{ boxShadow: "inset 0 0 0 1px var(--pl-line-2)" }}
+    >
+      <input
+        {...inputProps}
+        required
+        className="flex-1 px-4 py-3 bg-transparent rounded-xl outline-none text-sm"
+        style={{ color: "var(--pl-ink)" }}
+      />
+      {suffix && <span className="pr-3">{suffix}</span>}
+    </span>
+  </label>
+);
 
 export default Signup;

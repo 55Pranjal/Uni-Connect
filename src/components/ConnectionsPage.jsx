@@ -88,9 +88,20 @@ const ConnectionsPage = () => {
   const renderList = (list, status) => {
     if (list.length === 0) {
       return (
-        <p className="text-center text-slate-500 col-span-full">
-          No users here
-        </p>
+        <div
+          className="col-span-full text-center py-16"
+          style={{ color: "var(--pl-ink-3)" }}
+        >
+          <p
+            className="pl-display text-xl"
+            style={{ color: "var(--pl-ink)" }}
+          >
+            Nothing here yet.
+          </p>
+          <p className="text-sm mt-1">
+            Head to Discover to find new people.
+          </p>
+        </div>
       );
     }
 
@@ -102,7 +113,7 @@ const ConnectionsPage = () => {
         dept={user.department}
         year={user.year}
         avatarSeed={user._id}
-        profileLevel={0}
+        level={user.level ?? 1}
         skills={user.cardSkills || []}
         connectionStatus={status}
         onAccept={status === "pending_received" ? handleAccept : undefined}
@@ -112,59 +123,114 @@ const ConnectionsPage = () => {
     ));
   };
 
+  const TAB_LABELS = {
+    incoming: "Incoming",
+    connected: "Connected",
+    sent: "Sent",
+  };
+
   return (
     <>
       <Navbar />
 
-      <main className="flex-1 w-full px-6 pt-16">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-2xl font-bold text-slate-800 mb-6 text-center">
-            Connections
-          </h1>
+      <main className="flex-1 w-full pl-page">
+        <section className="max-w-6xl mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-8">
+          <div className="pl-reveal max-w-2xl">
+            <span className="pl-eyebrow">
+              <span className="dot" />
+              Your network
+            </span>
+            <h1
+              className="pl-display mt-5"
+              style={{ fontSize: "clamp(2.25rem, 5vw, 3.5rem)" }}
+            >
+              Connections.
+            </h1>
+            <p
+              className="mt-4 text-lg"
+              style={{ color: "var(--pl-ink-2)" }}
+            >
+              People you've connected with, plus pending requests in both
+              directions.
+            </p>
+          </div>
+        </section>
 
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 pb-16">
           {/* Tabs */}
-          <div className="flex justify-center gap-4 mb-10">
-            {TABS.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2 rounded-full text-sm font-medium border transition
-                  ${
-                    activeTab === tab
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-white text-slate-600 border-slate-300 hover:bg-slate-100"
-                  }`}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                {connections[tab]?.length > 0 && (
-                  <span className="ml-2 text-xs bg-white/20 px-2 py-0.5 rounded-full">
-                    {connections[tab].length}
-                  </span>
-                )}
-              </button>
-            ))}
+          <div
+            className="inline-flex items-center gap-1 p-1 rounded-full mb-10"
+            style={{
+              background: "var(--pl-surface)",
+              boxShadow: "inset 0 0 0 1px var(--pl-line)",
+            }}
+          >
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab;
+              const count = connections[tab]?.length || 0;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className="px-4 py-1.5 rounded-full text-sm font-medium transition flex items-center gap-2"
+                  style={
+                    isActive
+                      ? {
+                          background: "var(--pl-bg)",
+                          color: "var(--pl-ink)",
+                          boxShadow: "0 1px 2px rgba(10,10,10,0.06)",
+                        }
+                      : {
+                          color: "var(--pl-ink-2)",
+                          background: "transparent",
+                        }
+                  }
+                >
+                  {TAB_LABELS[tab]}
+                  {count > 0 && (
+                    <span
+                      className="text-xs tabular-nums px-1.5 py-0.5 rounded-full"
+                      style={{
+                        background: isActive
+                          ? "var(--pl-accent-soft)"
+                          : "var(--pl-bg)",
+                        color: isActive
+                          ? "var(--pl-accent-hover)"
+                          : "var(--pl-ink-3)",
+                      }}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           {/* Content */}
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {loading && (
-              <p className="text-center col-span-full text-slate-500">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-20">
+              <span
+                className="h-6 w-6 rounded-full animate-spin"
+                style={{
+                  border: "2px solid var(--pl-line)",
+                  borderTopColor: "var(--pl-ink)",
+                }}
+              />
+              <p className="text-sm" style={{ color: "var(--pl-ink-3)" }}>
                 Loading connections…
               </p>
-            )}
-
-            {!loading &&
-              activeTab === "incoming" &&
-              renderList(connections.incoming, "pending_received")}
-
-            {!loading &&
-              activeTab === "connected" &&
-              renderList(connections.connected, "connected")}
-
-            {!loading &&
-              activeTab === "sent" &&
-              renderList(connections.sent, "pending_sent")}
-          </div>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {activeTab === "incoming" &&
+                renderList(connections.incoming, "pending_received")}
+              {activeTab === "connected" &&
+                renderList(connections.connected, "connected")}
+              {activeTab === "sent" &&
+                renderList(connections.sent, "pending_sent")}
+            </div>
+          )}
         </div>
       </main>
 

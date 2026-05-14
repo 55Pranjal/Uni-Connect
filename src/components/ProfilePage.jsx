@@ -4,9 +4,9 @@ import Footer from "../components/Footer";
 import SkillCard from "../components/cards/SkillCard";
 
 import { getAvatarUrl } from "../utils/avatar";
-import { calculateProfileLevel } from "../utils/profileLevel";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import TierBadge from "./TierBadge";
 
 const ProfilePage = () => {
   // ✅ Correct hook usage — only at top level
@@ -205,8 +205,18 @@ const ProfilePage = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-[60vh] flex items-center justify-center text-slate-500">
-          Loading profile…
+        <div
+          className="min-h-[60vh] flex flex-col items-center justify-center gap-3"
+          style={{ color: "var(--pl-ink-3)" }}
+        >
+          <span
+            className="h-6 w-6 rounded-full animate-spin"
+            style={{
+              border: "2px solid var(--pl-line)",
+              borderTopColor: "var(--pl-ink)",
+            }}
+          />
+          <p className="text-sm">Loading profile…</p>
         </div>
         <Footer />
       </>
@@ -217,7 +227,10 @@ const ProfilePage = () => {
     return (
       <>
         <Navbar />
-        <div className="min-h-[60vh] flex items-center justify-center text-red-500">
+        <div
+          className="min-h-[60vh] flex items-center justify-center"
+          style={{ color: "#dc2626" }}
+        >
           {error || "Something went wrong"}
         </div>
         <Footer />
@@ -230,7 +243,7 @@ const ProfilePage = () => {
     window.location.href = "/";
   };
 
-  const profileLevel = calculateProfileLevel(user.skills);
+  const profileLevel = user.level ?? 1;
   const avatarUrl = getAvatarUrl(user.avatarSeed);
   const allSkills = user.skills || [];
 
@@ -238,58 +251,138 @@ const ProfilePage = () => {
     <>
       <Navbar />
 
-      <main className="flex-1 w-full max-w-5xl mx-auto px-6 py-10 space-y-12">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-5 sm:px-8 py-10 space-y-10 pl-page">
         {/* PROFILE HEADER */}
-        <section className="flex items-center gap-5">
-          <img
-            src={avatarUrl}
-            alt={user.name}
-            className="w-20 h-20 rounded-full ring-2 ring-indigo-500 bg-white"
-          />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-slate-800">{user.name}</h1>
-            <p className="text-slate-500">
-              {user.department} • {user.year}
-            </p>
-            <p className="text-sm text-indigo-600 font-semibold mt-1">
-              Profile Level: Lv. {profileLevel}
-            </p>
-          </div>
-
-          <div className="flex flex-col mb-10">
+        <section className="pl-reveal pt-4">
+          <div className="flex items-center justify-between mb-8">
+            <span className="pl-eyebrow">
+              <span className="dot" />
+              Your profile
+            </span>
             <button
               onClick={() => setShowEditInfoModal(true)}
-              className="text-sm text-indigo-600 hover:underline mb-4"
+              className="pl-btn-secondary"
+              style={{ padding: "0.5rem 1rem", fontSize: 13 }}
             >
-              Edit
+              Edit info →
             </button>
+          </div>
 
-            {/* Connections */}
-            <button
-              onClick={() => navigate("/connections")}
-              className="text-center group"
+          <div className="grid lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-8">
+              <div className="flex items-center gap-6">
+                <img
+                  src={avatarUrl}
+                  alt={user.name}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover"
+                  style={{
+                    background: "var(--pl-surface)",
+                    boxShadow: "inset 0 0 0 1px var(--pl-line-2)",
+                  }}
+                />
+                <div className="min-w-0">
+                  <h1
+                    className="pl-display truncate"
+                    style={{ fontSize: "clamp(2rem, 4vw, 3rem)" }}
+                  >
+                    {user.name}
+                  </h1>
+                  <p
+                    className="mt-2 text-base"
+                    style={{ color: "var(--pl-ink-2)" }}
+                  >
+                    {user.department || "—"}{" "}
+                    {user.year ? `· Year ${user.year}` : ""}
+                  </p>
+                  <div className="mt-2">
+                    <TierBadge level={profileLevel} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="lg:col-span-4 lg:pl-8"
+              style={{
+                borderLeft: "1px solid var(--pl-line)",
+              }}
             >
-              <p className="text-sm text-slate-500 group-hover:text-indigo-600">
-                Connects{" "}
-              </p>
-              <p className="text-2xl font-extrabold text-indigo-600">
-                {user.connectionsCount}
-              </p>
-            </button>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => navigate("/connections")}
+                  className="text-left transition rounded-lg p-2 -ml-2 hover:bg-neutral-50"
+                >
+                  <p
+                    className="pl-display tabular-nums leading-none"
+                    style={{ fontSize: "1.75rem" }}
+                  >
+                    {user.connectionsCount ?? 0}
+                  </p>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: "var(--pl-ink-3)" }}
+                  >
+                    Connects →
+                  </p>
+                </button>
+                <div>
+                  <p
+                    className="pl-display tabular-nums leading-none"
+                    style={{ fontSize: "1.75rem" }}
+                  >
+                    {profileLevel}
+                  </p>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: "var(--pl-ink-3)" }}
+                  >
+                    Level
+                  </p>
+                </div>
+                <div>
+                  <p
+                    className="pl-display tabular-nums leading-none"
+                    style={{ fontSize: "1.75rem" }}
+                  >
+                    {user.skills?.length ?? 0}
+                  </p>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: "var(--pl-ink-3)" }}
+                  >
+                    Skills
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
+        <div className="pl-rule" />
+
         {/* CARD PREVIEW */}
         <section>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-bold text-slate-800">
-              How others see you
-            </h2>
+          <div className="flex justify-between items-end mb-6">
+            <div>
+              <h2
+                className="pl-display"
+                style={{ fontSize: "clamp(1.5rem, 2.5vw, 1.875rem)" }}
+              >
+                How others see you
+              </h2>
+              <p
+                className="text-sm mt-1"
+                style={{ color: "var(--pl-ink-3)" }}
+              >
+                This is the card people see in Discover and Connections.
+              </p>
+            </div>
             <button
               onClick={() => setShowCardModal(true)}
-              className="text-sm text-indigo-600 hover:underline"
+              className="pl-btn-secondary"
+              style={{ padding: "0.5rem 1rem", fontSize: 13 }}
             >
-              Customize Card
+              Customize →
             </button>
           </div>
 
@@ -299,7 +392,7 @@ const ProfilePage = () => {
               name={user.name}
               dept={user.department}
               year={user.year}
-              profileLevel={profileLevel}
+              level={profileLevel}
               skills={cardSkills}
               avatarSeed={user.avatarSeed}
               isSelf={true}
@@ -309,77 +402,189 @@ const ProfilePage = () => {
 
         {/* ABOUT */}
         <section>
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-lg font-bold text-slate-800">About</h2>
+          <div className="flex justify-between items-end mb-6">
+            <h2
+              className="pl-display"
+              style={{ fontSize: "clamp(1.5rem, 2.5vw, 1.875rem)" }}
+            >
+              About
+            </h2>
             <button
               onClick={() => setShowEditAboutModal(true)}
-              className="text-sm text-indigo-600 hover:underline"
+              className="pl-btn-secondary"
+              style={{ padding: "0.5rem 1rem", fontSize: 13 }}
             >
-              Edit
+              Edit →
             </button>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-3">
-            <p className="text-slate-700">{user.bio || "No bio added yet."}</p>
+          <div className="pl-card p-5 space-y-3">
+            <p
+              className="leading-relaxed"
+              style={{ color: "var(--pl-ink-2)" }}
+            >
+              {user.bio || (
+                <span
+                  className="italic"
+                  style={{ color: "var(--pl-ink-3)" }}
+                >
+                  No bio added yet. Tell people what you're into!
+                </span>
+              )}
+            </p>
 
-            <div className="flex gap-4 text-sm">
-              {user.github && (
-                <a
-                  href={user.github}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-indigo-600 hover:underline"
-                >
-                  GitHub
-                </a>
-              )}
-              {user.linkedin && (
-                <a
-                  href={user.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-indigo-600 hover:underline"
-                >
-                  LinkedIn
-                </a>
-              )}
-            </div>
+            {(user.github || user.linkedin) && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {user.github && (
+                  <a
+                    href={user.github}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition"
+                    style={{
+                      color: "var(--pl-ink-2)",
+                      background: "var(--pl-surface)",
+                      boxShadow: "inset 0 0 0 1px var(--pl-line)",
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.23c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.72.08-.72 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.42-1.29.76-1.59-2.67-.3-5.47-1.34-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 6.8c1.02.005 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.6-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
+                    </svg>
+                    GitHub
+                  </a>
+                )}
+                {user.linkedin && (
+                  <a
+                    href={user.linkedin}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 border border-blue-100 text-blue-700 hover:bg-blue-100 text-sm font-medium transition"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M19 0h-14C2.24 0 0 2.24 0 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5V5c0-2.76-2.24-5-5-5zM8 19H5V8h3v11zM6.5 6.7c-.97 0-1.75-.79-1.75-1.75S5.53 3.2 6.5 3.2s1.75.79 1.75 1.75S7.47 6.7 6.5 6.7zM20 19h-3v-5.6c0-1.34-.03-3.06-1.86-3.06-1.87 0-2.15 1.46-2.15 2.97V19h-3V8h2.88v1.5h.04c.4-.76 1.39-1.56 2.86-1.56 3.06 0 3.62 2.01 3.62 4.63V19z" />
+                    </svg>
+                    LinkedIn
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </section>
 
-        {/* ✅ SKILLS SECTION (RESTORED) */}
+        {/* SKILLS */}
         <section>
-          <h2 className="text-lg font-bold text-slate-800 mb-3">Skills</h2>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            {profileSkills.map((skill) => (
-              <div
-                key={skill.name}
-                className="bg-white border border-slate-200 rounded-xl p-4 flex justify-between"
-              >
-                <span>{skill.name}</span>
-                <span className="font-semibold">Lv. {skill.level}</span>
-              </div>
-            ))}
+          <div className="flex justify-between items-end mb-6">
+            <h2
+              className="pl-display"
+              style={{ fontSize: "clamp(1.5rem, 2.5vw, 1.875rem)" }}
+            >
+              Skills
+            </h2>
+            <button
+              onClick={() => setShowProfileSkillsModal(true)}
+              className="pl-btn-secondary"
+              style={{ padding: "0.5rem 1rem", fontSize: 13 }}
+            >
+              Manage →
+            </button>
           </div>
 
-          <button
-            onClick={() => setShowProfileSkillsModal(true)}
-            className="mt-4 text-sm text-indigo-600 hover:underline"
-          >
-            View all skills
-          </button>
+          {profileSkills.length === 0 ? (
+            <div
+              className="pl-card p-8 text-center text-sm"
+              style={{ color: "var(--pl-ink-3)" }}
+            >
+              Add your first skill to start showing up in Discover.
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-3">
+              {profileSkills.map((skill) => (
+                <div
+                  key={skill.name}
+                  className="pl-card p-4 flex justify-between items-center"
+                >
+                  <span
+                    className="font-medium"
+                    style={{ color: "var(--pl-ink)" }}
+                  >
+                    {skill.name}
+                  </span>
+                  <span
+                    className="text-sm font-semibold px-2.5 py-1 rounded-lg"
+                    style={{
+                      background: "var(--pl-accent-soft)",
+                      color: "var(--pl-accent-hover)",
+                    }}
+                  >
+                    Lv {skill.level}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ACCOUNT */}
         <section>
-          <h2 className="text-lg font-bold text-slate-800 mb-3">Account</h2>
-          <div className="bg-white border rounded-xl p-5 text-sm">
-            <p>Email: {user.email}</p>
+          <h2
+            className="pl-display mb-6"
+            style={{ fontSize: "clamp(1.5rem, 2.5vw, 1.875rem)" }}
+          >
+            Account
+          </h2>
+          <div className="pl-card p-5 flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <p
+                className="text-xs"
+                style={{ color: "var(--pl-ink-3)" }}
+              >
+                Signed in as
+              </p>
+              <p
+                className="font-medium mt-0.5"
+                style={{ color: "var(--pl-ink)" }}
+              >
+                {user.email}
+              </p>
+            </div>
             <button
               onClick={handleLogout}
-              className="text-red-500 hover:underline mt-2"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition"
+              style={{
+                color: "#dc2626",
+                boxShadow: "inset 0 0 0 1px rgba(220, 38, 38, 0.2)",
+                background: "white",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(220,38,38,0.06)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "white";
+              }}
             >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.7}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
               Logout
             </button>
           </div>
@@ -433,7 +638,7 @@ const ProfilePage = () => {
               </button>
               <button
                 onClick={saveAbout}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+                className="pl-btn"
               >
                 Save
               </button>
@@ -487,7 +692,7 @@ const ProfilePage = () => {
               </button>
               <button
                 onClick={saveInfo}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+                className="pl-btn"
               >
                 Save
               </button>
@@ -567,7 +772,7 @@ const SkillSelectModal = ({
           />
           <button
             onClick={addNewSkill}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
+            className="pl-btn"
           >
             Add
           </button>
@@ -595,7 +800,7 @@ const SkillSelectModal = ({
                       setSelected((prev) => [...prev, skill]);
                     }
                   }}
-                  className="accent-indigo-600"
+                  style={{ accentColor: "var(--pl-accent)" }}
                 />
               </label>
             );
@@ -608,7 +813,7 @@ const SkillSelectModal = ({
           </button>
           <button
             onClick={onSave}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+            className="pl-btn"
           >
             Save
           </button>

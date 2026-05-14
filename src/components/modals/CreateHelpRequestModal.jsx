@@ -48,7 +48,7 @@ const CreateHelpRequestModal = ({ isOpen, onClose, onCreate }) => {
               placeholder="E.g., How do I implement React Router?"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neutral-900 outline-none transition"
             />
           </div>
 
@@ -59,7 +59,7 @@ const CreateHelpRequestModal = ({ isOpen, onClose, onCreate }) => {
               rows={4}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition resize-none"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neutral-900 outline-none transition resize-none"
             />
           </div>
 
@@ -69,13 +69,13 @@ const CreateHelpRequestModal = ({ isOpen, onClose, onCreate }) => {
               {form.skillTags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-3 py-1 bg-indigo-100 text-indigo-700 text-sm rounded-full flex items-center gap-1"
+                  className="px-3 py-1 bg-orange-50 text-orange-700 text-sm rounded-full flex items-center gap-1"
                 >
                   {tag}
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(tag)}
-                    className="text-indigo-500 hover:text-indigo-800 focus:outline-none"
+                    className="text-orange-600 hover:text-orange-800 focus:outline-none"
                   >
                     ×
                   </button>
@@ -89,7 +89,7 @@ const CreateHelpRequestModal = ({ isOpen, onClose, onCreate }) => {
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleAddTag(e)}
-                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-neutral-900 outline-none transition"
               />
               <button
                 type="button"
@@ -113,7 +113,7 @@ const CreateHelpRequestModal = ({ isOpen, onClose, onCreate }) => {
           <button
             onClick={handleSubmit}
             disabled={!form.title.trim() || !form.description.trim()}
-            className="px-5 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2 text-sm font-medium text-white bg-neutral-900 rounded-lg hover:bg-neutral-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Post Request
           </button>

@@ -118,7 +118,7 @@ const CommunityMembersModal = ({
                   >
                     {/* MEMBER INFO */}
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-indigo-200 rounded-full flex items-center justify-center font-semibold">
+                      <div className="w-9 h-9 bg-neutral-200 rounded-full flex items-center justify-center font-semibold">
                         {member.userId?.name?.charAt(0)}
                       </div>
 
@@ -139,9 +139,9 @@ const CommunityMembersModal = ({
                       <span
                         className={`text-xs px-2 py-1 rounded-full ${
                           member.role === "owner"
-                            ? "bg-purple-100 text-purple-600"
+                            ? "bg-rose-50 text-rose-700"
                             : member.role === "admin"
-                              ? "bg-indigo-100 text-indigo-600"
+                              ? "bg-orange-50 text-orange-700"
                               : "bg-slate-100 text-slate-600"
                         }`}
                       >
@@ -191,7 +191,7 @@ const CommunityMembersModal = ({
                           {/* {myRole === "admin" && !isSelf && (
                             <button
                               onClick={() => setTransferTarget(member)}
-                              className="text-indigo-600 text-xs font-medium hover:underline"
+                              className="text-neutral-900 text-xs font-medium hover:underline"
                             >
                               Transfer
                             </button>

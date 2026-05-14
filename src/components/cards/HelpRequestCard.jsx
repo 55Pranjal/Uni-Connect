@@ -89,7 +89,7 @@ const HelpRequestCard = ({ request, currentUserId, onClaim, onResolve }) => {
           {!isPoster && isOpen && (
             <button
               onClick={() => onClaim(request._id)}
-              className="px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-sm font-medium hover:bg-indigo-100 transition"
+              className="px-4 py-2 bg-orange-50 text-orange-700 border border-orange-200 rounded-lg text-sm font-medium hover:bg-orange-100 transition"
             >
               Claim Request
             </button>
