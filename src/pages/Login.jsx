@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Logomark } from "../components/Navbar";
+import GoogleSignInButton from "../components/GoogleSignInButton";
+import AuthShell, { SideHero, PreviewChip } from "../components/AuthShell";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -42,121 +44,146 @@ const Login = () => {
   };
 
   return (
-    <div
-      className="pl-page min-h-screen relative flex items-center justify-center px-5 py-12"
-      style={{ background: "var(--pl-bg)" }}
+    <AuthShell
+      sidebar={
+        <SideHero
+          eyebrow="Sign in"
+          title="Pick up right"
+          accent="where you left off."
+          subtitle="Your circle, your communities, and the projects you're shipping — they're all waiting on the other side."
+          features={[
+            "Continue chats with your connections",
+            "Drop back into community threads",
+            "See where your project rooms moved",
+          ]}
+          preview={
+            <PreviewChip name="3 new connection requests" text="Tap to review" />
+          }
+        />
+      }
     >
-      <div className="pl-soft-glow" />
-
-      <div className="w-full max-w-sm pl-reveal relative">
-        <Link to="/" className="flex items-center gap-2 justify-center mb-10">
-          <Logomark />
-          <span
-            className="font-semibold"
-            style={{ fontSize: 17, letterSpacing: "-0.02em" }}
-          >
-            UniConnect
-          </span>
-        </Link>
-
-        <div className="text-center mb-8">
-          <h1
-            className="pl-display"
-            style={{ fontSize: "clamp(2rem, 4vw, 2.5rem)" }}
-          >
-            Welcome back.
-          </h1>
-          <p
-            className="mt-3 text-base"
-            style={{ color: "var(--pl-ink-2)" }}
-          >
-            Sign in to continue where you left off.
-          </p>
-        </div>
-
-        {error && (
-          <p
-            className="text-sm px-4 py-2.5 rounded-xl mb-5 text-center"
-            style={{
-              color: "var(--pl-accent-hover)",
-              background: "var(--pl-accent-soft)",
-              border: "1px solid rgba(255, 90, 31, 0.25)",
-            }}
-          >
-            {error}
-          </p>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Field
-            label="Email"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="you@college.edu"
-          />
-
-          <Field
-            label="Password"
-            type={showPassword ? "text" : "password"}
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="••••••••"
-            suffix={
-              <button
-                type="button"
-                onClick={() => setShowPassword((p) => !p)}
-                className="text-xs font-medium"
-                style={{ color: "var(--pl-ink-3)" }}
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
-            }
-          />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="pl-btn w-full justify-center mt-2"
-            style={{ padding: "0.85rem 1.25rem", fontSize: 15 }}
-          >
-            {loading ? (
-              <>
-                <span
-                  className="h-3.5 w-3.5 rounded-full animate-spin"
-                  style={{
-                    border: "2px solid rgba(255,255,255,0.3)",
-                    borderTopColor: "white",
-                  }}
-                />
-                Signing in…
-              </>
-            ) : (
-              <>
-                Sign in
-                <span className="arrow">→</span>
-              </>
-            )}
-          </button>
-        </form>
-
-        <p
-          className="text-sm text-center mt-8"
-          style={{ color: "var(--pl-ink-3)" }}
+      <Link to="/" className="lg:hidden flex items-center gap-2 justify-center mb-10">
+        <Logomark />
+        <span
+          className="font-semibold"
+          style={{ fontSize: 17, letterSpacing: "-0.02em" }}
         >
-          New here?{" "}
-          <Link
-            to="/signup"
-            className="font-semibold"
-            style={{ color: "var(--pl-ink)" }}
-          >
-            Create an account →
-          </Link>
+          UniConnect
+        </span>
+      </Link>
+
+      <div className="mb-8">
+        <h1
+          className="pl-display"
+          style={{ fontSize: "clamp(1.875rem, 3.5vw, 2.25rem)" }}
+        >
+          Welcome back.
+        </h1>
+        <p className="mt-2 text-base" style={{ color: "var(--pl-ink-2)" }}>
+          Sign in to continue.
         </p>
       </div>
-    </div>
+
+      {error && (
+        <p
+          className="text-sm px-4 py-2.5 rounded-xl mb-5"
+          style={{
+            color: "var(--pl-accent-hover)",
+            background: "var(--pl-accent-soft)",
+            border: "1px solid rgba(255, 90, 31, 0.25)",
+          }}
+        >
+          {error}
+        </p>
+      )}
+
+      <div className="mb-5">
+        <GoogleSignInButton onError={setError} />
+      </div>
+
+      <div
+        className="flex items-center gap-3 mb-5"
+        style={{ color: "var(--pl-ink-3)" }}
+      >
+        <span
+          className="h-px flex-1"
+          style={{ background: "var(--pl-line-2)" }}
+        />
+        <span className="text-xs uppercase tracking-wide">or</span>
+        <span
+          className="h-px flex-1"
+          style={{ background: "var(--pl-line-2)" }}
+        />
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Field
+          label="Email"
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="you@college.edu"
+        />
+        <Field
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="••••••••"
+          suffix={
+            <button
+              type="button"
+              onClick={() => setShowPassword((p) => !p)}
+              className="text-xs font-medium"
+              style={{ color: "var(--pl-ink-3)" }}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          }
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="pl-btn w-full justify-center mt-2"
+          style={{ padding: "0.85rem 1.25rem", fontSize: 15 }}
+        >
+          {loading ? (
+            <>
+              <span
+                className="h-3.5 w-3.5 rounded-full animate-spin"
+                style={{
+                  border: "2px solid rgba(255,255,255,0.3)",
+                  borderTopColor: "white",
+                }}
+              />
+              Signing in…
+            </>
+          ) : (
+            <>
+              Sign in
+              <span className="arrow">→</span>
+            </>
+          )}
+        </button>
+      </form>
+
+      <p
+        className="text-sm text-center mt-8"
+        style={{ color: "var(--pl-ink-3)" }}
+      >
+        New here?{" "}
+        <Link
+          to="/signup"
+          className="font-semibold"
+          style={{ color: "var(--pl-ink)" }}
+        >
+          Create an account →
+        </Link>
+      </p>
+    </AuthShell>
   );
 };
 

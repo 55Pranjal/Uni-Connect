@@ -1,59 +1,190 @@
 import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Logomark } from "../components/Navbar";
+import AuthShell, { SideHero } from "../components/AuthShell";
 
-const ProfileDecisionV2 = () => {
+const ProfileDecision = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-white">
-      <div className="w-full max-w-md bg-white rounded-2xl p-8 shadow-xl border border-slate-200">
-        <h1 className="text-center font-extrabold text-3xl text-slate-800 mb-2">
-          You’re Almost There 🎯
-        </h1>
+    <AuthShell
+      sidebar={
+        <SideHero
+          eyebrow="Almost there"
+          title="A profile worth"
+          accent="showing up with."
+          subtitle="A complete profile gets faster replies, better match suggestions, and an actual chance at being found by the right people."
+          features={[
+            "Get faster replies on help requests",
+            "Match with students who share your interests",
+            "Show off skills people can actually look up",
+          ]}
+          preview={
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <p
+                  className="text-xs font-medium"
+                  style={{ color: "rgba(255,255,255,0.75)" }}
+                >
+                  Profile completion
+                </p>
+                <p
+                  className="text-xs tabular-nums font-semibold"
+                  style={{ color: "var(--pl-accent)" }}
+                >
+                  30%
+                </p>
+              </div>
+              <div
+                className="h-1.5 rounded-full overflow-hidden"
+                style={{ background: "rgba(255,255,255,0.08)" }}
+              >
+                <div
+                  className="h-full rounded-full transition-[width] duration-700"
+                  style={{
+                    width: "30%",
+                    background: "var(--pl-accent)",
+                    boxShadow: "0 0 18px rgba(255,90,31,0.35)",
+                  }}
+                />
+              </div>
+            </div>
+          }
+        />
+      }
+    >
+      <Link
+        to="/"
+        className="lg:hidden flex items-center gap-2 justify-center mb-10"
+      >
+        <Logomark />
+        <span
+          className="font-semibold"
+          style={{ fontSize: 17, letterSpacing: "-0.02em" }}
+        >
+          UniConnect
+        </span>
+      </Link>
 
-        <p className="text-center text-slate-500 mb-6">
+      <div className="mb-8">
+        <span className="pl-eyebrow">
+          <span className="dot" />
+          One more step
+        </span>
+        <h1
+          className="pl-display mt-5"
+          style={{ fontSize: "clamp(1.875rem, 3.5vw, 2.25rem)" }}
+        >
+          You're almost there.
+        </h1>
+        <p className="mt-2 text-base" style={{ color: "var(--pl-ink-2)" }}>
           Complete your profile to unlock meaningful conversations.
         </p>
+      </div>
 
-        {/* Progress */}
-        <div className="mb-6">
-          <div className="flex justify-between text-sm text-slate-500 mb-1">
-            <span>Profile completion</span>
-            <span>30%</span>
-          </div>
-          <div className="w-full bg-slate-200 rounded-full h-2">
-            <div className="bg-neutral-900 h-2 rounded-full w-[30%]" />
-          </div>
-        </div>
-
-        {/* Benefits */}
-        <div className="bg-slate-50 rounded-lg p-4 mb-6">
-          <p className="font-semibold text-slate-700 mb-2">
-            Completing your profile lets you:
-          </p>
-          <ul className="text-sm text-slate-600 space-y-1 list-disc list-inside">
-            <li>Get faster replies</li>
-            <li>Find students with matching interests</li>
-            <li>Request & offer help</li>
-          </ul>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex flex-col gap-3">
-          <a
-            href="/onboarding"
-            className="w-full text-center py-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold transition"
+      {/* Progress bar */}
+      <div className="mb-6">
+        <div
+          className="flex justify-between text-xs mb-2"
+          style={{ color: "var(--pl-ink-3)" }}
+        >
+          <span>Profile completion</span>
+          <span
+            className="tabular-nums font-semibold"
+            style={{ color: "var(--pl-ink)" }}
           >
-            Complete Profile
-          </a>
-
-          <a
-            href="/"
-            className="w-full text-center py-3 rounded-lg text-slate-600 hover:text-slate-800 font-medium"
-          >
-            I’ll do this later
-          </a>
+            30%
+          </span>
+        </div>
+        <div
+          className="w-full h-1.5 rounded-full overflow-hidden"
+          style={{ background: "var(--pl-line)" }}
+        >
+          <div
+            className="h-full rounded-full transition-[width] duration-700"
+            style={{ width: "30%", background: "var(--pl-accent)" }}
+          />
         </div>
       </div>
-    </div>
+
+      {/* Benefits card */}
+      <div
+        className="rounded-2xl p-5 mb-8"
+        style={{
+          background: "var(--pl-accent-soft)",
+          border: "1px solid rgba(255, 90, 31, 0.22)",
+        }}
+      >
+        <p
+          className="font-semibold mb-3 text-sm"
+          style={{ color: "var(--pl-accent-ink)" }}
+        >
+          Completing your profile lets you:
+        </p>
+        <ul className="space-y-2">
+          {[
+            "Get faster replies",
+            "Find students with matching interests",
+            "Request & offer help",
+          ].map((t) => (
+            <li
+              key={t}
+              className="flex items-start gap-2.5 text-sm"
+              style={{ color: "var(--pl-ink-2)" }}
+            >
+              <span
+                className="w-4 h-4 rounded-full flex-shrink-0 mt-0.5 flex items-center justify-center"
+                style={{ background: "var(--pl-accent)" }}
+              >
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+              {t}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Actions */}
+      <div className="flex flex-col gap-3">
+        <button
+          onClick={() => navigate("/onboarding")}
+          className="pl-btn w-full justify-center"
+          style={{ padding: "0.85rem 1.25rem", fontSize: 15 }}
+        >
+          Complete profile
+          <span className="arrow">→</span>
+        </button>
+        <button
+          onClick={() => navigate("/")}
+          className="w-full text-center py-3 rounded-xl font-medium text-sm transition"
+          style={{ color: "var(--pl-ink-3)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--pl-ink)")}
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.color = "var(--pl-ink-3)")
+          }
+        >
+          I'll do this later
+        </button>
+      </div>
+    </AuthShell>
   );
 };
 
-export default ProfileDecisionV2;
+export default ProfileDecision;
