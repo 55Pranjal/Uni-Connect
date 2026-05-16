@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api/api";
-import Navbar from "./Navbar.jsx";
+import Navbar from "../components/Navbar.jsx";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
 

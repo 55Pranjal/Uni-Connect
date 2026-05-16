@@ -10,7 +10,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
-import CommunityCard from "./cards/CommunityCard";
+import CommunityCard from "../components/cards/CommunityCard";
 import { invalidate } from "../lib/queryEvents";
 import { CONNECTIONS_KEY } from "../hooks/useConnections";
 

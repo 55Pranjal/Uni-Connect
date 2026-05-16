@@ -9,11 +9,11 @@ import { useSocket } from "../context/SocketContext";
 import DeleteChannelModal from "../components/modals/DeleteChannelModal";
 import RenameChannelModal from "../components/modals/RenameChannelModal";
 import LeaveCommunityModal from "../components/modals/LeaveCommunityModal";
-import BannedMembersModal from "./modals/BannedMembersModal";
+import BannedMembersModal from "../components/modals/BannedMembersModal";
 import { createHelpRequest, claimHelpRequest, resolveHelpRequest } from "../api/helpRequests";
-import CreateHelpRequestModal from "./modals/CreateHelpRequestModal";
-import HelpRequestCard from "./cards/HelpRequestCard";
-import { notifyXp, refreshXp } from "./XpToastHost";
+import CreateHelpRequestModal from "../components/modals/CreateHelpRequestModal";
+import HelpRequestCard from "../components/cards/HelpRequestCard";
+import { notifyXp, refreshXp } from "../components/XpToastHost";
 import { useCommunity } from "../hooks/useChannels";
 import { useHelpRequests } from "../hooks/useHelpRequests";
 

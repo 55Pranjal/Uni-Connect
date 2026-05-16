@@ -1,17 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Logomark } from "./Navbar";
+import { Logomark } from "../components/Navbar";
 
-const Signup = () => {
+const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +22,7 @@ const Signup = () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/auth/signup`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -34,10 +30,10 @@ const Signup = () => {
         },
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Signup failed");
-      if (!data.user || !data.token) throw new Error("Invalid signup response");
+      if (!res.ok) throw new Error(data.message || "Login failed");
+      if (!data.user || !data.token) throw new Error("Invalid login response");
       login(data.token, data.user);
-      navigate("/ProfileDecision");
+      navigate("/");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -64,21 +60,17 @@ const Signup = () => {
         </Link>
 
         <div className="text-center mb-8">
-          <span className="pl-eyebrow">
-            <span className="dot" />
-            Free forever for students
-          </span>
           <h1
-            className="pl-display mt-5"
+            className="pl-display"
             style={{ fontSize: "clamp(2rem, 4vw, 2.5rem)" }}
           >
-            Create your account.
+            Welcome back.
           </h1>
           <p
             className="mt-3 text-base"
             style={{ color: "var(--pl-ink-2)" }}
           >
-            One minute to set up. A campus to discover.
+            Sign in to continue where you left off.
           </p>
         </div>
 
@@ -97,14 +89,6 @@ const Signup = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field
-            label="Full name"
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Ada Lovelace"
-          />
-          <Field
             label="Email"
             type="email"
             name="email"
@@ -112,13 +96,14 @@ const Signup = () => {
             onChange={handleChange}
             placeholder="you@college.edu"
           />
+
           <Field
             label="Password"
             type={showPassword ? "text" : "password"}
             name="password"
             value={formData.password}
             onChange={handleChange}
-            placeholder="At least 8 characters"
+            placeholder="••••••••"
             suffix={
               <button
                 type="button"
@@ -146,11 +131,11 @@ const Signup = () => {
                     borderTopColor: "white",
                   }}
                 />
-                Creating account…
+                Signing in…
               </>
             ) : (
               <>
-                Create account
+                Sign in
                 <span className="arrow">→</span>
               </>
             )}
@@ -161,13 +146,13 @@ const Signup = () => {
           className="text-sm text-center mt-8"
           style={{ color: "var(--pl-ink-3)" }}
         >
-          Already have an account?{" "}
+          New here?{" "}
           <Link
-            to="/login"
+            to="/signup"
             className="font-semibold"
             style={{ color: "var(--pl-ink)" }}
           >
-            Sign in →
+            Create an account →
           </Link>
         </p>
       </div>
@@ -198,4 +183,4 @@ const Field = ({ label, suffix, ...inputProps }) => (
   </label>
 );
 
-export default Signup;
+export default Login;
