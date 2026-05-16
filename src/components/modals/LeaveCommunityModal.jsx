@@ -15,8 +15,8 @@ const LeaveCommunityModal = ({ isOpen, onClose, communityId }) => {
       await api.post(`/community/${communityId}/leave`);
 
       navigate("/");
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to leave community");
+    } catch {
+      /* api interceptor surfaces the toast */
     } finally {
       setLoading(false);
     }

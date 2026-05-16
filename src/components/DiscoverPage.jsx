@@ -103,8 +103,8 @@ const DiscoverPage = () => {
     try {
       await sendConnectionRequest(userId);
       updateConnectionStatus(userId, "pending_sent");
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to send request");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 
@@ -112,8 +112,8 @@ const DiscoverPage = () => {
     try {
       await acceptConnectionRequest(userId);
       updateConnectionStatus(userId, "connected");
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to accept request");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 

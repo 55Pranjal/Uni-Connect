@@ -27,7 +27,7 @@ const ConnectionsPage = () => {
       setConnections(res.data);
     } catch (err) {
       console.error(err);
-      alert("Failed to load connections");
+      /* api interceptor surfaces the toast */
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ const ConnectionsPage = () => {
       });
     } catch (err) {
       console.error(err);
-      alert("Failed to accept request");
+      /* api interceptor surfaces the toast */
     }
   };
 
@@ -66,7 +66,7 @@ const ConnectionsPage = () => {
       }));
     } catch (err) {
       console.error(err);
-      alert("Failed to reject request");
+      /* api interceptor surfaces the toast */
     }
   };
 
@@ -81,7 +81,7 @@ const ConnectionsPage = () => {
       }));
     } catch (err) {
       console.error(err);
-      alert("Failed to remove connection");
+      /* api interceptor surfaces the toast */
     }
   };
 

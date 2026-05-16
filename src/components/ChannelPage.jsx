@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import CreateChannelModal from "../components/modals/CreateChannelModal";
 import CommunityMembersModal from "../components/modals/CommunityMembersModal";
 import { useAuth } from "../context/AuthContext";
-import { io } from "socket.io-client";
+import { useSocket } from "../context/SocketContext";
 import DeleteChannelModal from "../components/modals/DeleteChannelModal";
 import RenameChannelModal from "../components/modals/RenameChannelModal";
 import LeaveCommunityModal from "../components/modals/LeaveCommunityModal";
@@ -15,12 +15,11 @@ import CreateHelpRequestModal from "./modals/CreateHelpRequestModal";
 import HelpRequestCard from "./cards/HelpRequestCard";
 import { notifyXp, refreshXp } from "./XpToastHost";
 
-const socket = io(import.meta.env.VITE_BACKEND_URL);
-
 const ChannelPage = () => {
   const { communityId, channelId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const socket = useSocket();
 
   const [community, setCommunity] = useState(null);
   const [channels, setChannels] = useState([]);
@@ -77,7 +76,12 @@ const ChannelPage = () => {
 
   /* ================= SOCKET LISTENER ================= */
   useEffect(() => {
-    socket.emit("joinCommunity", communityId);
+    if (!socket) return;
+
+    const joinCommunity = () => socket.emit("joinCommunity", communityId);
+    // Join now (if already connected) and on every reconnect.
+    if (socket.connected) joinCommunity();
+    socket.on("connect", joinCommunity);
 
     const handleChannelDeleted = ({ channelId: deletedId }) => {
       setChannels((prev) => prev.filter((c) => c._id !== deletedId));
@@ -93,14 +97,35 @@ const ChannelPage = () => {
       );
     };
 
+    // Live help-request updates: when anyone in this community creates,
+    // claims, or resolves a request, refresh the local list so other viewers
+    // (especially the asker, when the helper claims) see it without reload.
+    const handleHelpCreated = (hr) => {
+      if (hr.channelId !== channelId) return; // only the active channel's list
+      setHelpRequests((prev) =>
+        prev.some((x) => x._id === hr._id) ? prev : [hr, ...prev]
+      );
+    };
+
+    const handleHelpUpdated = (hr) => {
+      setHelpRequests((prev) =>
+        prev.map((x) => (x._id === hr._id ? hr : x))
+      );
+    };
+
     socket.on("channelDeleted", handleChannelDeleted);
     socket.on("channelRenamed", handleChannelRenamed);
+    socket.on("helpRequest:created", handleHelpCreated);
+    socket.on("helpRequest:updated", handleHelpUpdated);
 
     return () => {
+      socket.off("connect", joinCommunity);
       socket.off("channelDeleted", handleChannelDeleted);
       socket.off("channelRenamed", handleChannelRenamed);
+      socket.off("helpRequest:created", handleHelpCreated);
+      socket.off("helpRequest:updated", handleHelpUpdated);
     };
-  }, [communityId]); // 🔥 remove channelId
+  }, [socket, communityId, channelId]);
 
   /* ================= CREATE CHANNEL ================= */
   const handleCreateChannel = async (data) => {
@@ -116,8 +141,8 @@ const ChannelPage = () => {
       const newChannel = res.data.channels[res.data.channels.length - 1];
 
       navigate(`/community/${communityId}/channel/${newChannel._id}`);
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to create channel");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 
@@ -165,8 +190,8 @@ const ChannelPage = () => {
       });
       setHelpRequests([res.data.helpRequest, ...helpRequests]);
       setShowHelpModal(false);
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to create help request");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 
@@ -176,8 +201,8 @@ const ChannelPage = () => {
       setHelpRequests((prev) =>
         prev.map((hr) => (hr._id === id ? res.data.helpRequest : hr))
       );
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to claim help request");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 
@@ -194,8 +219,8 @@ const ChannelPage = () => {
         notifyXp("Help request resolved — XP awarded.");
       }
       refreshXp();
-    } catch (err) {
-      notifyXp(err.response?.data?.message || "Failed to resolve help request");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 
@@ -275,35 +300,38 @@ const ChannelPage = () => {
             {channels.map((ch) => (
               <div
                 key={ch._id}
-                className="relative group flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-100"
+                onClick={() => {
+                  navigate(`/community/${communityId}/channel/${ch._id}`);
+                  setShowSidebar(false);
+                }}
+                className={`relative group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-100 ${
+                  ch._id === channelId ? "text-neutral-900 font-medium bg-orange-50" : ""
+                }`}
               >
-                <button
-                  onClick={() => {
-                    navigate(`/community/${communityId}/channel/${ch._id}`);
-                    setShowSidebar(false);
-                  }}
-                  className={`flex-1 text-left ${
-                    ch._id === channelId ? "text-neutral-900 font-medium bg-orange-50" : ""
-                  }`}
-                >
+                <span className="flex-1 text-left truncate">
                   # {ch.name}
-                </button>
+                </span>
 
                 {canManageChannels && !ch.isDefault && (
                   <button
-                    onClick={() =>
-                      setOpenMenu(openMenu === ch._id ? null : ch._id)
-                    }
-                    className="text-slate-400 hover:text-slate-600"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenu(openMenu === ch._id ? null : ch._id);
+                    }}
+                    className="text-slate-400 hover:text-slate-600 px-1"
                   >
                     ⋮
                   </button>
                 )}
 
                 {openMenu === ch._id && (
-                  <div className="absolute right-0 top-10 bg-white shadow-lg rounded-lg border w-40 z-50">
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute right-0 top-10 bg-white shadow-lg rounded-lg border w-40 z-50"
+                  >
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setRenameTarget(ch);
                         setOpenMenu(null);
                       }}
@@ -313,7 +341,8 @@ const ChannelPage = () => {
                     </button>
 
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setDeleteTarget(ch);
                         setOpenMenu(null);
                       }}

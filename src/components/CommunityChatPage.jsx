@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useOutletContext } from "react-router-dom";
 
-import { io } from "socket.io-client";
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+import { useSocket } from "../context/SocketContext";
 
 const formatTime = (date) =>
   new Date(date).toLocaleTimeString([], {
@@ -17,6 +15,7 @@ const CommunityChatPage = () => {
   const { communityId, channelId } = useParams();
   const { user } = useAuth();
   const { myRole } = useOutletContext();
+  const socket = useSocket();
 
   const [messages, setMessages] = useState([]);
   const [channelType, setChannelType] = useState("text");
@@ -24,7 +23,6 @@ const CommunityChatPage = () => {
   const [loading, setLoading] = useState(true);
   const [typingUsers, setTypingUsers] = useState([]);
 
-  const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
@@ -51,37 +49,50 @@ const CommunityChatPage = () => {
 
   /* ================= SOCKET ================= */
   useEffect(() => {
-    if (!channelId || !user) return;
+    if (!socket || !channelId || !user) return;
 
-    const socket = io(BACKEND_URL);
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
+    const joinRooms = () => {
       socket.emit("joinCommunity", communityId);
       socket.emit("joinChannel", channelId);
-    });
+    };
 
-    socket.on("receiveMessage", (msg) => {
+    if (socket.connected) joinRooms();
+    socket.on("connect", joinRooms);
+
+    const handleReceive = (msg) => {
       setMessages((prev) =>
         prev.some((m) => m._id === msg._id) ? prev : [...prev, msg],
       );
-    });
+    };
 
-    socket.on("typing:start", ({ userId, name }) => {
+    const handleTypingStart = ({ userId, name }) => {
       if (userId === user._id) return;
 
       setTypingUsers((prev) => {
         if (prev.some((u) => u.id === userId)) return prev;
         return [...prev, { id: userId, name }];
       });
-    });
+    };
 
-    socket.on("typing:stop", ({ userId }) => {
+    const handleTypingStop = ({ userId }) => {
       setTypingUsers((prev) => prev.filter((u) => u.id !== userId));
-    });
+    };
 
-    return () => socket.disconnect();
-  }, [channelId, communityId, user]);
+    socket.on("receiveMessage", handleReceive);
+    socket.on("typing:start", handleTypingStart);
+    socket.on("typing:stop", handleTypingStop);
+
+    return () => {
+      socket.off("connect", joinRooms);
+      socket.off("receiveMessage", handleReceive);
+      socket.off("typing:start", handleTypingStart);
+      socket.off("typing:stop", handleTypingStop);
+
+      if (socket.connected) {
+        socket.emit("leaveChannel", channelId);
+      }
+    };
+  }, [socket, channelId, communityId, user]);
 
   /* ================= AUTO SCROLL ================= */
   useEffect(() => {
@@ -91,9 +102,9 @@ const CommunityChatPage = () => {
   /* ================= HANDLE TYPING ================= */
   const handleTyping = (value) => {
     setText(value);
-    if (!socketRef.current) return;
+    if (!socket) return;
 
-    socketRef.current.emit("typing:start", {
+    socket.emit("typing:start", {
       channelId,
       userId: user._id,
       name: user.name,
@@ -102,7 +113,7 @@ const CommunityChatPage = () => {
     clearTimeout(typingTimeoutRef.current);
 
     typingTimeoutRef.current = setTimeout(() => {
-      socketRef.current.emit("typing:stop", {
+      socket.emit("typing:stop", {
         channelId,
         userId: user._id,
       });
@@ -118,15 +129,23 @@ const CommunityChatPage = () => {
         content: text,
       });
 
-      setText("");
-    } catch (err) {
-      const msg = err.response?.data?.message;
-
-      if (msg === "You are muted in this community") {
-        alert("You are muted and cannot send messages.");
-        return;
+      // Trigger the server's room broadcast. Without this emit, the message
+      // is persisted but the `channel:{id}` room never receives `receiveMessage`,
+      // so the sender (and other tabs) only see the message after a reload.
+      // Mirrors DMChatPage's `sendDM` emit pattern.
+      const messageId = res.data?.message?._id;
+      if (socket && messageId) {
+        socket.emit("sendMessage", { messageId, channelId });
       }
 
+      // Also stop any lingering typing indicator immediately.
+      if (socket) {
+        socket.emit("typing:stop", { channelId, userId: user._id });
+      }
+
+      setText("");
+    } catch (err) {
+      /* api interceptor surfaces the toast (e.g. "You are muted in this community") */
       console.error("Send failed:", err);
     }
   };

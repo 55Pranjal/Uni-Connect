@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../../api/api";
+import { useToast } from "../../context/ToastContext";
 
 const RenameCommunityModal = ({
   isOpen,
@@ -8,6 +9,7 @@ const RenameCommunityModal = ({
   currentName,
   onSuccess,
 }) => {
+  const { notify } = useToast();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +23,7 @@ const RenameCommunityModal = ({
 
   const handleRename = async () => {
     if (!name.trim()) {
-      alert("Community name cannot be empty");
+      notify({ title: "Community name cannot be empty", severity: "error" });
       return;
     }
 
@@ -34,8 +36,8 @@ const RenameCommunityModal = ({
 
       onSuccess(res.data.community.name);
       onClose();
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to rename community");
+    } catch {
+      /* api interceptor surfaces the toast */
     } finally {
       setLoading(false);
     }

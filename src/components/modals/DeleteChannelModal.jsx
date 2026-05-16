@@ -20,8 +20,8 @@ const DeleteChannelModal = ({
 
       onSuccess(channel._id);
       onClose();
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete channel");
+    } catch {
+      /* api interceptor surfaces the toast */
     } finally {
       setLoading(false);
     }

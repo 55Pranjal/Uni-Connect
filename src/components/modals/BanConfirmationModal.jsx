@@ -15,8 +15,8 @@ const BanConfirmationModal = ({
 
       onSuccess(member.userId._id);
       onClose();
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to ban user");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 

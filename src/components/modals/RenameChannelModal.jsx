@@ -31,8 +31,8 @@ const RenameChannelModal = ({
 
       onSuccess(channel._id, name.trim());
       onClose();
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to rename channel");
+    } catch {
+      /* api interceptor surfaces the toast */
     } finally {
       setLoading(false);
     }
