@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import SharedNavbar from "./Navbar";
-import SharedFooter from "./Footer";
+import SharedNavbar from "../components/Navbar";
+import SharedFooter from "../components/Footer";
 
 /* ════════════════════════════════════════════════════════════════════════
    PRODUCT LANDING — white + warm orange accent

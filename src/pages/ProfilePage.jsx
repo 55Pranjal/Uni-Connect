@@ -6,7 +6,7 @@ import SkillCard from "../components/cards/SkillCard";
 import { getAvatarUrl } from "../utils/avatar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import TierBadge from "./TierBadge";
+import TierBadge from "../components/TierBadge";
 
 const ProfilePage = () => {
   // ✅ Correct hook usage — only at top level
