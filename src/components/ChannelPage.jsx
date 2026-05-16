@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams, Outlet } from "react-router-dom";
 import api from "../api/api";
 import Navbar from "../components/Navbar";
@@ -10,10 +10,12 @@ import DeleteChannelModal from "../components/modals/DeleteChannelModal";
 import RenameChannelModal from "../components/modals/RenameChannelModal";
 import LeaveCommunityModal from "../components/modals/LeaveCommunityModal";
 import BannedMembersModal from "./modals/BannedMembersModal";
-import { getHelpRequestsByChannel, createHelpRequest, claimHelpRequest, resolveHelpRequest } from "../api/helpRequests";
+import { createHelpRequest, claimHelpRequest, resolveHelpRequest } from "../api/helpRequests";
 import CreateHelpRequestModal from "./modals/CreateHelpRequestModal";
 import HelpRequestCard from "./cards/HelpRequestCard";
 import { notifyXp, refreshXp } from "./XpToastHost";
+import { useCommunity } from "../hooks/useChannels";
+import { useHelpRequests } from "../hooks/useHelpRequests";
 
 const ChannelPage = () => {
   const { communityId, channelId } = useParams();
@@ -21,11 +23,30 @@ const ChannelPage = () => {
   const { user } = useAuth();
   const socket = useSocket();
 
-  const [community, setCommunity] = useState(null);
-  const [channels, setChannels] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Community bundle + per-channel help requests come from query hooks.
+  const { data: communityData, setData: setCommunityData } =
+    useCommunity(communityId);
+  const community = communityData?.community ?? null;
+  const channels = communityData?.channels ?? [];
+  const myRole = communityData?.myRole ?? null;
+
+  const {
+    data: helpRequestsData,
+    loading: loadingHelp,
+    setData: setHelpRequests,
+  } = useHelpRequests(channelId);
+  const helpRequests = helpRequestsData ?? [];
+
+  // Helpers for patching slices of the community bundle without losing the rest.
+  const patchChannels = useCallback(
+    (updater) =>
+      setCommunityData((prev) =>
+        prev ? { ...prev, channels: updater(prev.channels) } : prev,
+      ),
+    [setCommunityData],
+  );
+
   const [showModal, setShowModal] = useState(false);
-  const [myRole, setMyRole] = useState(null);
   const [showMembers, setShowMembers] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
 
@@ -40,39 +61,22 @@ const ChannelPage = () => {
 
   // Help Request UI State
   const [activeTab, setActiveTab] = useState("chat");
-  const [helpRequests, setHelpRequests] = useState([]);
   const [showHelpModal, setShowHelpModal] = useState(false);
-  const [loadingHelp, setLoadingHelp] = useState(false);
 
   const canManageChannels = myRole === "admin";
 
-  /* ================= FETCH COMMUNITY + CHANNELS ================= */
+  /* ================= DEFAULT-CHANNEL REDIRECT =================
+     Once the community bundle has loaded and the URL has no channelId,
+     bounce to the default (or first) channel. */
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await api.get(`/community/${communityId}`);
-
-        setCommunity(res.data.community);
-        setChannels(res.data.channels);
-        setMyRole(res.data.myRole);
-
-        if (!channelId && res.data.channels.length > 0) {
-          const defaultChannel =
-            res.data.channels.find((c) => c.isDefault) || res.data.channels[0];
-
-          navigate(`/community/${communityId}/channel/${defaultChannel._id}`, {
-            replace: true,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to load community:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [communityId]);
+    if (!communityData || channelId) return;
+    if (channels.length === 0) return;
+    const defaultChannel =
+      channels.find((c) => c.isDefault) || channels[0];
+    navigate(`/community/${communityId}/channel/${defaultChannel._id}`, {
+      replace: true,
+    });
+  }, [communityData, channelId, channels, communityId, navigate]);
 
   /* ================= SOCKET LISTENER ================= */
   useEffect(() => {
@@ -84,16 +88,16 @@ const ChannelPage = () => {
     socket.on("connect", joinCommunity);
 
     const handleChannelDeleted = ({ channelId: deletedId }) => {
-      setChannels((prev) => prev.filter((c) => c._id !== deletedId));
+      patchChannels((prev) => prev.filter((c) => c._id !== deletedId));
 
       if (channelId === deletedId) {
         navigate(`/community/${communityId}`);
       }
     };
 
-    const handleChannelRenamed = ({ channelId, name }) => {
-      setChannels((prev) =>
-        prev.map((c) => (c._id === channelId ? { ...c, name } : c)),
+    const handleChannelRenamed = ({ channelId: renamedId, name }) => {
+      patchChannels((prev) =>
+        prev.map((c) => (c._id === renamedId ? { ...c, name } : c)),
       );
     };
 
@@ -102,14 +106,15 @@ const ChannelPage = () => {
     // (especially the asker, when the helper claims) see it without reload.
     const handleHelpCreated = (hr) => {
       if (hr.channelId !== channelId) return; // only the active channel's list
-      setHelpRequests((prev) =>
-        prev.some((x) => x._id === hr._id) ? prev : [hr, ...prev]
-      );
+      setHelpRequests((prev) => {
+        const list = prev ?? [];
+        return list.some((x) => x._id === hr._id) ? list : [hr, ...list];
+      });
     };
 
     const handleHelpUpdated = (hr) => {
       setHelpRequests((prev) =>
-        prev.map((x) => (x._id === hr._id ? hr : x))
+        (prev ?? []).map((x) => (x._id === hr._id ? hr : x)),
       );
     };
 
@@ -125,21 +130,25 @@ const ChannelPage = () => {
       socket.off("helpRequest:created", handleHelpCreated);
       socket.off("helpRequest:updated", handleHelpUpdated);
     };
-  }, [socket, communityId, channelId]);
+  }, [
+    socket,
+    communityId,
+    channelId,
+    patchChannels,
+    setHelpRequests,
+    navigate,
+  ]);
 
   /* ================= CREATE CHANNEL ================= */
   const handleCreateChannel = async (data) => {
     try {
+      // Backend returns the full community bundle; replace cache wholesale.
       const res = await api.post(`/community/${communityId}/channel`, data);
-
-      setCommunity(res.data.community);
-      setChannels(res.data.channels);
-      setMyRole(res.data.myRole);
+      setCommunityData(res.data);
 
       setShowModal(false);
 
       const newChannel = res.data.channels[res.data.channels.length - 1];
-
       navigate(`/community/${communityId}/channel/${newChannel._id}`);
     } catch {
       /* api interceptor surfaces the toast */
@@ -148,7 +157,7 @@ const ChannelPage = () => {
 
   /* ================= DELETE CHANNEL ================= */
   const handleDeleteSuccess = (deletedId) => {
-    setChannels((prev) => prev.filter((c) => c._id !== deletedId));
+    patchChannels((prev) => prev.filter((c) => c._id !== deletedId));
 
     if (channelId === deletedId) {
       navigate(`/community/${communityId}`);
@@ -157,30 +166,15 @@ const ChannelPage = () => {
 
   /* ================= RENAME CHANNEL ================= */
   const handleRenameSuccess = (id, newName) => {
-    setChannels((prev) =>
+    patchChannels((prev) =>
       prev.map((c) => (c._id === id ? { ...c, name: newName } : c)),
     );
   };
 
-  /* ================= HELP REQUESTS ================= */
-  useEffect(() => {
-    if (channelId && activeTab === "help") {
-      fetchHelpRequests();
-    }
-  }, [channelId, activeTab]);
-
-  const fetchHelpRequests = async () => {
-    setLoadingHelp(true);
-    try {
-      const res = await getHelpRequestsByChannel(channelId);
-      setHelpRequests(res.data.helpRequests);
-    } catch (err) {
-      console.error("Failed to fetch help requests", err);
-    } finally {
-      setLoadingHelp(false);
-    }
-  };
-
+  /* ================= HELP REQUEST MUTATIONS =================
+     The hook fires the initial fetch automatically; mutations just patch the
+     cache with the fresh entity from each response. Socket broadcasts cover
+     updates from other users. */
   const handleCreateHelpRequest = async (data) => {
     try {
       const res = await createHelpRequest({
@@ -188,7 +182,7 @@ const ChannelPage = () => {
         communityId,
         channelId,
       });
-      setHelpRequests([res.data.helpRequest, ...helpRequests]);
+      setHelpRequests((prev) => [res.data.helpRequest, ...(prev ?? [])]);
       setShowHelpModal(false);
     } catch {
       /* api interceptor surfaces the toast */
@@ -199,7 +193,7 @@ const ChannelPage = () => {
     try {
       const res = await claimHelpRequest(id);
       setHelpRequests((prev) =>
-        prev.map((hr) => (hr._id === id ? res.data.helpRequest : hr))
+        (prev ?? []).map((hr) => (hr._id === id ? res.data.helpRequest : hr)),
       );
     } catch {
       /* api interceptor surfaces the toast */
@@ -210,7 +204,7 @@ const ChannelPage = () => {
     try {
       const res = await resolveHelpRequest(id, data);
       setHelpRequests((prev) =>
-        prev.map((hr) => (hr._id === id ? res.data.helpRequest : hr))
+        (prev ?? []).map((hr) => (hr._id === id ? res.data.helpRequest : hr)),
       );
       const newLevel = res.data.levelUpResults?.resolverNewLevel;
       if (newLevel) {
