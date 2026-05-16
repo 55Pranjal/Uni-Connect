@@ -568,6 +568,160 @@
     50% { transform: translateY(-8px) rotate(var(--r, 0deg)); }
   }
 
+  /* ─── AUTH SHELL ─── */
+  .auth-shell {
+    display: grid;
+    min-height: 100vh;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 1024px) {
+    .auth-shell {
+      grid-template-columns: 1.05fr 1fr;
+    }
+  }
+
+  .auth-side {
+    display: none;
+    position: relative;
+    flex-direction: column;
+    padding: 2.5rem 3rem;
+    overflow: hidden;
+    background: var(--pl-ink);
+    color: var(--pl-bg);
+  }
+  @media (min-width: 1024px) {
+    .auth-side {
+      display: flex;
+    }
+  }
+  @media (min-width: 1280px) {
+    .auth-side {
+      padding: 3.5rem 4.5rem;
+    }
+  }
+
+  /* Subtle warm glow + grain in the dark sidebar */
+  .auth-side::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        circle at 25% 85%,
+        rgba(255, 90, 31, 0.22) 0,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 85% 15%,
+        rgba(255, 90, 31, 0.10) 0,
+        transparent 55%
+      ),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.025 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-size: cover, cover, 180px 180px;
+    opacity: 1;
+  }
+  .auth-side > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .auth-side-link {
+    color: rgba(255, 255, 255, 0.6);
+    transition: color 0.18s ease;
+  }
+  .auth-side-link:hover {
+    color: var(--pl-accent);
+  }
+
+  .auth-side-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(255, 90, 31, 0.14);
+    color: var(--pl-accent);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    border: 1px solid rgba(255, 90, 31, 0.28);
+  }
+  .auth-side-eyebrow .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--pl-accent);
+    box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.25);
+  }
+
+  /* Bullet check pill used in side hero feature lists */
+  .auth-side-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(255, 90, 31, 0.18);
+    color: var(--pl-accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Optional decorative preview chip floating in the sidebar */
+  .auth-side-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px 10px 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+  }
+
+  /* Onboarding step indicator in sidebar */
+  .auth-side-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.25s ease;
+  }
+  .auth-side-step .num {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+  }
+  .auth-side-step.is-active {
+    color: white;
+  }
+  .auth-side-step.is-active .num {
+    background: var(--pl-accent);
+    color: var(--pl-ink);
+    border-color: var(--pl-accent);
+  }
+  .auth-side-step.is-done {
+    color: rgba(255, 255, 255, 0.7);
+  }
+  .auth-side-step.is-done .num {
+    background: rgba(255, 90, 31, 0.18);
+    color: var(--pl-accent);
+    border-color: rgba(255, 90, 31, 0.4);
+  }
+
   /* ─── TOASTS ─── */
   .pl-toast {
     position: relative;
