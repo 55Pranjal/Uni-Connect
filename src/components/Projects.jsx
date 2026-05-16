@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { getAvatarUrl } from "../utils/avatar";
 import {
   getAllProjects,
@@ -718,6 +719,7 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
 ═══════════════════════════════════════════════════════════════ */
 const Projects = () => {
   const { user, isAuthenticated } = useAuth();
+  const { confirm } = useToast();
   const navigate = useNavigate();
 
   const [projects, setProjects] = useState([]);
@@ -777,13 +779,19 @@ const Projects = () => {
 
   /* ── DELETE ── */
   const handleDelete = async (projectId) => {
-    if (!window.confirm("Delete this project? This cannot be undone.")) return;
+    const ok = await confirm({
+      title: "Delete this project?",
+      message: "This cannot be undone.",
+      confirmText: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       await deleteProject(projectId);
       setProjects((p) => p.filter((x) => x._id !== projectId));
       if (selectedProject?._id === projectId) setSelectedProject(null);
     } catch {
-      alert("Failed to delete project.");
+      /* api interceptor surfaces the toast */
     }
   };
 
@@ -824,14 +832,19 @@ const Projects = () => {
           )
         );
       }
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to send request.");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 
   /* ── REMOVE COLLABORATOR (owner) ── */
   const handleRemoveCollaborator = async (projectId, reqId) => {
-    if (!window.confirm("Remove this collaborator from the project?")) return;
+    const ok = await confirm({
+      title: "Remove this collaborator?",
+      confirmText: "Remove",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       const res = await removeCollaborator(projectId, reqId);
       const updatedProject = res.data?.project || res.data;
@@ -847,8 +860,8 @@ const Projects = () => {
         setProjects((p) => p.map((x) => (x._id === projectId ? strip(x) : x)));
         setSelectedProject((prev) => (prev?._id === projectId ? strip(prev) : prev));
       }
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to remove collaborator.");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 
@@ -892,8 +905,8 @@ const Projects = () => {
             : prev
         );
       }
-    } catch (err) {
-      alert(err.response?.data?.message || `Failed to ${action} request.`);
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 

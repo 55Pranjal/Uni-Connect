@@ -25,8 +25,12 @@ const DEFAULT_DURATION = 4500;
 
 const XpToastHost = () => {
   const [toasts, setToasts] = useState([]);
+  const [paused, setPaused] = useState(
+    typeof document !== "undefined" ? document.hidden : false,
+  );
   const nextId = useRef(0);
-  const timers = useRef(new Map()); // id -> { dismissTimer, removeTimer }
+  // id -> { dismissTimer, removeTimer, startedAt, elapsed, duration }
+  const timers = useRef(new Map());
 
   const startDismiss = useCallback((id) => {
     setToasts((prev) =>
@@ -38,6 +42,36 @@ const XpToastHost = () => {
     }, LEAVE_MS);
     const slot = timers.current.get(id) || {};
     slot.removeTimer = removeTimer;
+    slot.dismissTimer = null;
+    timers.current.set(id, slot);
+  }, []);
+
+  // Helper: start (or restart) the dismiss timer for a toast with whatever
+  // time it has remaining. Only called when the page is visible.
+  const armDismiss = useCallback(
+    (id) => {
+      const slot = timers.current.get(id);
+      if (!slot || slot.dismissTimer) return;
+      const remaining = Math.max(0, (slot.duration ?? 0) - (slot.elapsed ?? 0));
+      slot.startedAt = Date.now();
+      slot.dismissTimer = setTimeout(() => startDismiss(id), remaining);
+      timers.current.set(id, slot);
+    },
+    [startDismiss],
+  );
+
+  // Helper: stop the dismiss timer and bank its elapsed time. Called when the
+  // page becomes hidden (so a toast that arrived while the user was away
+  // doesn't quietly time out before they look at it).
+  const disarmDismiss = useCallback((id) => {
+    const slot = timers.current.get(id);
+    if (!slot?.dismissTimer) return;
+    clearTimeout(slot.dismissTimer);
+    slot.dismissTimer = null;
+    if (slot.startedAt) {
+      slot.elapsed = (slot.elapsed ?? 0) + (Date.now() - slot.startedAt);
+      slot.startedAt = null;
+    }
     timers.current.set(id, slot);
   }, []);
 
@@ -62,8 +96,7 @@ const XpToastHost = () => {
 
       setToasts((prev) => {
         const next = [...prev, { id, title, subtitle, kind, duration, leaving: false }];
-        // Cap visible: queue extras by leaving in place but the dismiss
-        // logic below pushes earliest entries out first.
+        // Cap visible: dismiss the oldest if we'd exceed MAX_VISIBLE.
         if (next.length > MAX_VISIBLE) {
           const overflow = next.slice(0, next.length - MAX_VISIBLE);
           overflow.forEach((t) => startDismiss(t.id));
@@ -71,8 +104,16 @@ const XpToastHost = () => {
         return next;
       });
 
-      const dismissTimer = setTimeout(() => startDismiss(id), duration);
-      timers.current.set(id, { dismissTimer });
+      // Register the timer slot, but only arm the dismiss when visible.
+      // If the user is on another tab, the timer stays disarmed until they
+      // return — the toast greets them when they look, not before.
+      timers.current.set(id, {
+        dismissTimer: null,
+        startedAt: null,
+        elapsed: 0,
+        duration,
+      });
+      if (!document.hidden) armDismiss(id);
     };
 
     window.addEventListener("xp:notify", handler);
@@ -84,7 +125,24 @@ const XpToastHost = () => {
       });
       timers.current.clear();
     };
-  }, [startDismiss]);
+  }, [startDismiss, armDismiss]);
+
+  // Page Visibility: pause active dismiss timers when hidden, resume on return.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.hidden) {
+        setPaused(true);
+        timers.current.forEach((_slot, id) => disarmDismiss(id));
+      } else {
+        setPaused(false);
+        timers.current.forEach((slot, id) => {
+          if (!slot.removeTimer) armDismiss(id);
+        });
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [armDismiss, disarmDismiss]);
 
   const dismissNow = (id) => {
     const slot = timers.current.get(id);
@@ -96,8 +154,9 @@ const XpToastHost = () => {
 
   return (
     <div
-      className="fixed bottom-5 right-5 z-[100] flex flex-col-reverse gap-3 pointer-events-none"
-      style={{ left: "auto" }}
+      className={`pl-toast-host fixed z-[100] flex flex-col-reverse gap-3 pointer-events-none bottom-4 inset-x-4 sm:bottom-5 sm:left-auto sm:right-5 sm:w-auto sm:max-w-sm${
+        paused ? " is-paused" : ""
+      }`}
     >
       {toasts.map((t) => (
         <Toast

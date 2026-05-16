@@ -87,8 +87,8 @@ const CommunityMembersModal = ({
           m.userId._id === member.userId._id ? { ...m, status: "active" } : m,
         ),
       );
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to unmute user");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 

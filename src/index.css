@@ -574,8 +574,8 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    width: 360px;
-    max-width: calc(100vw - 32px);
+    width: 100%;
+    max-width: 360px;
     padding: 14px 16px 14px 14px;
     border-radius: 14px;
     background: var(--pl-bg);
@@ -651,6 +651,11 @@
   .pl-toast-close:hover {
     opacity: 1;
     background: rgba(127, 127, 127, 0.15);
+  }
+  /* Pause progress + dismiss animation while the page is hidden (matches the
+     visibility-aware dismiss timer in XpToastHost). */
+  .pl-toast-host.is-paused .pl-toast-progress {
+    animation-play-state: paused;
   }
   .pl-toast-progress {
     position: absolute;

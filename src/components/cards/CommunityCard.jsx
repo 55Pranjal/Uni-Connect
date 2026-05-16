@@ -28,8 +28,8 @@ const CommunityCard = ({ community, mode = "discover" }) => {
       setLoading(true);
       await api.post(`/community/${community._id}/join`);
       setJoined(true);
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to join community");
+    } catch {
+      /* api interceptor surfaces the toast */
     } finally {
       setLoading(false);
     }

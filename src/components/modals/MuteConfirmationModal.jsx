@@ -15,8 +15,8 @@ const MuteConfirmationModal = ({
 
       onSuccess(member.userId._id);
       onClose();
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to mute user");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 

@@ -1,35 +1,43 @@
 import { useEffect } from "react";
-import { io } from "socket.io-client";
-import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import { notifyXp, refreshXp } from "./XpToastHost";
 
 /**
- * Maintains a global socket subscription on the user's personal room
- * (`user:{userId}`) and converts `xp:awarded` events into the in-app
- * toast + LevelBadge refresh.
+ * Subscribes to `xp:awarded` on the shared socket and converts the events
+ * into LevelBadge refreshes + toasts.
  *
- * Behavior:
- *   - Level-up events → big celebratory toast
- *   - Routine XP gains → silently bump the LevelBadge (no toast spam)
+ * Toast policy:
+ *   - Level-up        → big celebratory toast (highest priority)
+ *   - Notable events  → toast acknowledging the action (HELP_REQUEST_RESOLVED,
+ *                       PROJECT_COLLABORATION — rare, meaningful)
+ *   - Routine events  → silent badge bump only (DM_SENT, SKILL_VALIDATED,
+ *                       COMMUNITY_MESSAGE — frequent, would be spam)
  *
- * Mount once at the App root after AuthProvider. Renders nothing.
+ * Mount once at the App root inside <SocketProvider>. Renders nothing.
  */
+
+const NOTABLE_EVENTS = {
+  HELP_REQUEST_RESOLVED: {
+    title: "Thanks for helping!",
+    durationMs: 4500,
+  },
+  PROJECT_COLLABORATION: {
+    title: "You're in — collaboration accepted",
+    durationMs: 4500,
+  },
+};
+
 const XpSocket = () => {
-  const { user } = useAuth();
+  const socket = useSocket();
 
   useEffect(() => {
-    if (!user?._id) return;
+    if (!socket) return;
 
-    const socket = io(
-      import.meta.env.VITE_BACKEND_URL || "http://localhost:5000",
-    );
-    socket.on("connect", () => socket.emit("joinUser", user._id));
-
-    socket.on("xp:awarded", ({ newLevel, xpAwarded }) => {
-      // Always update the LevelBadge so the bar fills smoothly.
+    const handleXp = ({ eventType, newLevel, xpAwarded }) => {
+      // Always update the LevelBadge so the progress bar reflects the new XP.
       refreshXp();
 
-      // Only celebrate level-ups. Routine XP from messages/actions stays silent.
+      // Level-up takes precedence — celebrate it.
       if (newLevel) {
         notifyXp({
           title: `Level ${newLevel} unlocked`,
@@ -39,14 +47,26 @@ const XpSocket = () => {
           kind: "levelup",
           durationMs: 5000,
         });
+        return;
       }
-    });
+
+      // No level-up, but the event itself is notable → smaller toast.
+      const notable = NOTABLE_EVENTS[eventType];
+      if (notable) {
+        notifyXp({
+          title: notable.title,
+          subtitle: xpAwarded ? `+${xpAwarded} XP earned.` : undefined,
+          durationMs: notable.durationMs,
+        });
+      }
+    };
+
+    socket.on("xp:awarded", handleXp);
 
     return () => {
-      socket.off("xp:awarded");
-      socket.disconnect();
+      socket.off("xp:awarded", handleXp);
     };
-  }, [user?._id]);
+  }, [socket]);
 
   return null;
 };

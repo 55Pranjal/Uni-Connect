@@ -2,6 +2,7 @@ import React from "react";
 import { getAvatarUrl } from "../../utils/avatar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import api from "../../api/api";
 import TierBadge from "../TierBadge";
 
@@ -23,6 +24,7 @@ const SkillCard = ({
   const avatarUrl = getAvatarUrl(avatarSeed);
   const navigate = useNavigate();
   const { token } = useAuth();
+  const { confirm } = useToast();
   const visibleSkills = skills.slice(0, 3);
 
   const handleChat = async () => {
@@ -52,9 +54,14 @@ const SkillCard = ({
             </button>
             {onRemove && (
               <button
-                onClick={() => {
-                  if (window.confirm("Remove this connection?"))
-                    onRemove(userId);
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: "Remove this connection?",
+                    message: "You can reconnect later.",
+                    confirmText: "Remove",
+                    danger: true,
+                  });
+                  if (ok) onRemove(userId);
                 }}
                 title="Remove"
                 className="pl-btn-ghost"

@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import { io } from "socket.io-client";
 import api from "../api/api";
 import Navbar from "./Navbar.jsx";
 import { useAuth } from "../context/AuthContext";
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+import { useSocket } from "../context/SocketContext";
 
 const formatTime = (date) =>
   new Date(date).toLocaleTimeString([], {
@@ -16,6 +14,7 @@ const formatTime = (date) =>
 const DMChatPage = () => {
   const { conversationId } = useParams();
   const { user, token, loading: authLoading } = useAuth();
+  const socket = useSocket();
 
   const userId = user?._id;
 
@@ -25,7 +24,6 @@ const DMChatPage = () => {
   const [isSocketReady, setIsSocketReady] = useState(false);
   const [typingUsers, setTypingUsers] = useState([]);
 
-  const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
@@ -46,51 +44,54 @@ const DMChatPage = () => {
   /* ================= SOCKET ================= */
   useEffect(() => {
     if (authLoading) return;
-    if (!userId || !conversationId || !token) return;
+    if (!socket || !userId || !conversationId) return;
 
-    const socket = io(BACKEND_URL, {
-      auth: { token },
-    });
-
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
+    const joinRoom = () => {
       setIsSocketReady(true);
       socket.emit("joinConversation", conversationId);
-    });
+    };
 
-    socket.on("disconnect", () => {
-      setIsSocketReady(false);
-    });
+    const handleDisconnect = () => setIsSocketReady(false);
+
+    if (socket.connected) joinRoom();
+    socket.on("connect", joinRoom);
+    socket.on("disconnect", handleDisconnect);
 
     /* ===== RECEIVE DM ===== */
-    socket.on("receiveDM", (msg) => {
+    const handleReceiveDM = (msg) => {
       setMessages((prev) =>
         prev.some((m) => m._id === msg._id) ? prev : [...prev, msg],
       );
-    });
+    };
 
     /* ===== TYPING START ===== */
-    socket.on("dm:typing:start", ({ userId: typingUserId, name }) => {
+    const handleTypingStart = ({ userId: typingUserId, name }) => {
       if (typingUserId === userId) return;
 
       setTypingUsers((prev) => {
         if (prev.some((u) => u.id === typingUserId)) return prev;
         return [...prev, { id: typingUserId, name }];
       });
-    });
+    };
 
     /* ===== TYPING STOP ===== */
-    socket.on("dm:typing:stop", ({ userId: typingUserId }) => {
+    const handleTypingStop = ({ userId: typingUserId }) => {
       setTypingUsers((prev) => prev.filter((u) => u.id !== typingUserId));
-    });
+    };
+
+    socket.on("receiveDM", handleReceiveDM);
+    socket.on("dm:typing:start", handleTypingStart);
+    socket.on("dm:typing:stop", handleTypingStop);
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      socket.off("connect", joinRoom);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("receiveDM", handleReceiveDM);
+      socket.off("dm:typing:start", handleTypingStart);
+      socket.off("dm:typing:stop", handleTypingStop);
       setIsSocketReady(false);
     };
-  }, [conversationId, userId, token, authLoading]);
+  }, [socket, conversationId, userId, authLoading]);
 
   /* ================= AUTO SCROLL ================= */
   useEffect(() => {
@@ -101,9 +102,9 @@ const DMChatPage = () => {
   const handleTyping = (value) => {
     setText(value);
 
-    if (!socketRef.current || !isSocketReady) return;
+    if (!socket || !isSocketReady) return;
 
-    socketRef.current.emit("dm:typing:start", {
+    socket.emit("dm:typing:start", {
       conversationId,
       userId,
       name: user.name,
@@ -112,9 +113,9 @@ const DMChatPage = () => {
     clearTimeout(typingTimeoutRef.current);
 
     typingTimeoutRef.current = setTimeout(() => {
-      if (!socketRef.current) return;
+      if (!socket) return;
 
-      socketRef.current.emit("dm:typing:stop", {
+      socket.emit("dm:typing:stop", {
         conversationId,
         userId,
       });
@@ -131,14 +132,14 @@ const DMChatPage = () => {
         content: text,
       });
 
-      socketRef.current.emit("sendDM", {
+      socket.emit("sendDM", {
         messageId: res.data._id,
         conversationId,
       });
 
       setText("");
 
-      socketRef.current.emit("dm:typing:stop", {
+      socket.emit("dm:typing:stop", {
         conversationId,
         userId,
       });

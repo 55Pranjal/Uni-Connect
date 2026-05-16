@@ -20,10 +20,14 @@ import Projects from "./components/Projects.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import XpToastHost from "./components/XpToastHost.jsx";
 import XpSocket from "./components/XpSocket.jsx";
+import { ToastProvider } from "./context/ToastContext.jsx";
+import { SocketProvider } from "./context/SocketContext.jsx";
 
 function App() {
   return (
     <BackendLoader>
+      <ToastProvider>
+        <SocketProvider>
       <div
         className="min-h-screen flex flex-col w-full [&>*]:w-full pl-page"
         style={{ background: "var(--pl-bg)" }}
@@ -57,6 +61,8 @@ function App() {
         <XpToastHost />
         <XpSocket />
       </div>
+        </SocketProvider>
+      </ToastProvider>
     </BackendLoader>
   );
 }

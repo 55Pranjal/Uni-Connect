@@ -19,8 +19,8 @@ const DeleteCommunityModal = ({
 
       onDeleteSuccess(communityId); // 🔥 update parent
       onClose(); // 🔥 close modal
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete community");
+    } catch {
+      /* api interceptor surfaces the toast */
     } finally {
       setLoading(false);
     }

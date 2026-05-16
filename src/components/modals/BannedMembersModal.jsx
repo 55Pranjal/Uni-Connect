@@ -24,8 +24,8 @@ const BannedMembersModal = ({ isOpen, onClose, communityId, myRole }) => {
       await api.post(`/community/${communityId}/unban/${userId}`);
 
       setBanned((prev) => prev.filter((m) => m.userId._id !== userId));
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to unban");
+    } catch {
+      /* api interceptor surfaces the toast */
     }
   };
 
