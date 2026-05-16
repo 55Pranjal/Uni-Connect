@@ -1,40 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/api";
 import Navbar from "./Navbar";
 import CommunityCard from "../components/cards/CommunityCard";
+import { useMyCommunities } from "../hooks/useCommunities";
 
 const CommunityPage = () => {
   const navigate = useNavigate();
 
-  const [communities, setCommunities] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data, loading } = useMyCommunities();
+  const communities = data ?? [];
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    const fetchCommunities = async () => {
-      try {
-        const res = await api.get("/community/my");
-        setCommunities(res.data);
-      } catch (err) {
-        console.error("Failed to fetch communities:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCommunities();
-  }, []);
-
-  useEffect(() => {
-    const handleDelete = (e) => {
-      const id = e.detail;
-      setCommunities((prev) =>
-        prev.filter((community) => community._id !== id),
-      );
-    };
-    window.addEventListener("communityDeleted", handleDelete);
-    return () => window.removeEventListener("communityDeleted", handleDelete);
-  }, []);
 
   const filtered = communities.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()),

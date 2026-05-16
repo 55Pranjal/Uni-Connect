@@ -3,6 +3,8 @@ import api from "../../api/api";
 import { useState, useEffect } from "react";
 import RenameCommunityModal from "../modals/RenameCommunityModal";
 import DeleteCommunityModal from "../modals/DeleteCommunityModal";
+import { invalidate } from "../../lib/queryEvents";
+import { MY_COMMUNITIES_KEY } from "../../hooks/useCommunities";
 
 const CommunityCard = ({ community, mode = "discover" }) => {
   const navigate = useNavigate();
@@ -28,6 +30,7 @@ const CommunityCard = ({ community, mode = "discover" }) => {
       setLoading(true);
       await api.post(`/community/${community._id}/join`);
       setJoined(true);
+      invalidate(MY_COMMUNITIES_KEY);
     } catch {
       /* api interceptor surfaces the toast */
     } finally {
@@ -244,11 +247,7 @@ const CommunityCard = ({ community, mode = "discover" }) => {
         isOpen={deleteModal}
         onClose={() => setDeleteModal(false)}
         communityId={community._id}
-        onDeleteSuccess={(id) => {
-          window.dispatchEvent(
-            new CustomEvent("communityDeleted", { detail: id }),
-          );
-        }}
+        onDeleteSuccess={() => invalidate(MY_COMMUNITIES_KEY)}
       />
     </>
   );

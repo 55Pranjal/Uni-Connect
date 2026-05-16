@@ -11,6 +11,8 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 import CommunityCard from "./cards/CommunityCard";
+import { invalidate } from "../lib/queryEvents";
+import { CONNECTIONS_KEY } from "../hooks/useConnections";
 
 const DiscoverPage = () => {
   const [query, setQuery] = useState("");
@@ -103,6 +105,7 @@ const DiscoverPage = () => {
     try {
       await sendConnectionRequest(userId);
       updateConnectionStatus(userId, "pending_sent");
+      invalidate(CONNECTIONS_KEY);
     } catch {
       /* api interceptor surfaces the toast */
     }
@@ -112,6 +115,7 @@ const DiscoverPage = () => {
     try {
       await acceptConnectionRequest(userId);
       updateConnectionStatus(userId, "connected");
+      invalidate(CONNECTIONS_KEY);
     } catch {
       /* api interceptor surfaces the toast */
     }

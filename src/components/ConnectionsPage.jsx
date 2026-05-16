@@ -1,37 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SkillCard from "../components/cards/SkillCard";
-import api from "../api/api";
 import { acceptConnectionRequest, removeConnection } from "../api/connection";
+import { useConnections } from "../hooks/useConnections";
 
 const TABS = ["incoming", "connected", "sent"];
 
+const EMPTY = { incoming: [], connected: [], sent: [] };
+
 const ConnectionsPage = () => {
   const [activeTab, setActiveTab] = useState("incoming");
-  const [connections, setConnections] = useState({
-    incoming: [],
-    connected: [],
-    sent: [],
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchConnections();
-  }, []);
-
-  const fetchConnections = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/connections");
-      setConnections(res.data);
-    } catch (err) {
-      console.error(err);
-      /* api interceptor surfaces the toast */
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, loading, setData: setConnections } = useConnections();
+  const connections = data ?? EMPTY;
 
   // ===== ACCEPT =====
   const handleAccept = async (userId) => {
@@ -39,14 +20,14 @@ const ConnectionsPage = () => {
       await acceptConnectionRequest(userId);
 
       setConnections((prev) => {
-        const acceptedUser = prev.incoming.find((u) => u._id === userId);
-
+        const cur = prev ?? EMPTY;
+        const acceptedUser = cur.incoming.find((u) => u._id === userId);
         return {
-          ...prev,
-          incoming: prev.incoming.filter((u) => u._id !== userId),
+          ...cur,
+          incoming: cur.incoming.filter((u) => u._id !== userId),
           connected: acceptedUser
-            ? [...prev.connected, acceptedUser]
-            : prev.connected,
+            ? [...cur.connected, acceptedUser]
+            : cur.connected,
         };
       });
     } catch (err) {
@@ -60,10 +41,13 @@ const ConnectionsPage = () => {
     try {
       await removeConnection(userId);
 
-      setConnections((prev) => ({
-        ...prev,
-        incoming: prev.incoming.filter((u) => u._id !== userId),
-      }));
+      setConnections((prev) => {
+        const cur = prev ?? EMPTY;
+        return {
+          ...cur,
+          incoming: cur.incoming.filter((u) => u._id !== userId),
+        };
+      });
     } catch (err) {
       console.error(err);
       /* api interceptor surfaces the toast */
@@ -75,10 +59,13 @@ const ConnectionsPage = () => {
     try {
       await removeConnection(userId);
 
-      setConnections((prev) => ({
-        ...prev,
-        connected: prev.connected.filter((u) => u._id !== userId),
-      }));
+      setConnections((prev) => {
+        const cur = prev ?? EMPTY;
+        return {
+          ...cur,
+          connected: cur.connected.filter((u) => u._id !== userId),
+        };
+      });
     } catch (err) {
       console.error(err);
       /* api interceptor surfaces the toast */

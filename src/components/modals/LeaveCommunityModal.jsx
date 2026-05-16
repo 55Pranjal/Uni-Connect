@@ -1,6 +1,8 @@
 import { useState } from "react";
 import api from "../../api/api";
 import { useNavigate } from "react-router-dom";
+import { invalidate } from "../../lib/queryEvents";
+import { MY_COMMUNITIES_KEY } from "../../hooks/useCommunities";
 
 const LeaveCommunityModal = ({ isOpen, onClose, communityId }) => {
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ const LeaveCommunityModal = ({ isOpen, onClose, communityId }) => {
 
       await api.post(`/community/${communityId}/leave`);
 
+      invalidate(MY_COMMUNITIES_KEY);
       navigate("/");
     } catch {
       /* api interceptor surfaces the toast */
