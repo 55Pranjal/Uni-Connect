@@ -16,10 +16,12 @@ import CreateCommunity from "./pages/CreateCommunity.jsx";
 import ChannelPage from "./pages/ChannelPage.jsx";
 import CommunityChatPage from "./pages/CommunityChatPage.jsx";
 import Projects from "./pages/Projects.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import BackendLoader from "./components/BackendLoader.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import XpToastHost from "./components/XpToastHost.jsx";
 import XpSocket from "./components/XpSocket.jsx";
+import { RouteErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
 
@@ -28,39 +30,41 @@ function App() {
     <BackendLoader>
       <ToastProvider>
         <SocketProvider>
-      <div
-        className="min-h-screen flex flex-col w-full [&>*]:w-full pl-page"
-        style={{ background: "var(--pl-bg)" }}
-      >
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/public/:id" element={<PublicProfilePage />} />
-          <Route path="/projects" element={<Projects />}/>
+          <RouteErrorBoundary>
+            <div
+              className="min-h-screen flex flex-col w-full [&>*]:w-full pl-page"
+              style={{ background: "var(--pl-bg)" }}
+            >
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/public/:id" element={<PublicProfilePage />} />
+                <Route path="/projects" element={<Projects />} />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/profileDecision" element={<ProfileDecision />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/discover" element={<DiscoverPage />} />
-            <Route path="/connections" element={<ConnectionsPage />} />
-            <Route path="/dm/:conversationId" element={<DMChatPage />} />
-            <Route path="/communities" element={<CommunityPage />} />
-            <Route path="/create-community" element={<CreateCommunity />} />
-            <Route path="/community/:communityId" element={<ChannelPage />}>
-              <Route path="channel/:channelId" element={<CommunityChatPage />} />
-            </Route>
-          </Route>
+                {/* Protected Routes */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/profileDecision" element={<ProfileDecision />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/discover" element={<DiscoverPage />} />
+                  <Route path="/connections" element={<ConnectionsPage />} />
+                  <Route path="/dm/:conversationId" element={<DMChatPage />} />
+                  <Route path="/communities" element={<CommunityPage />} />
+                  <Route path="/create-community" element={<CreateCommunity />} />
+                  <Route path="/community/:communityId" element={<ChannelPage />}>
+                    <Route path="channel/:channelId" element={<CommunityChatPage />} />
+                  </Route>
+                </Route>
 
-          {/* Fallback */}
-          <Route path="*" element={<div>NO ROUTE MATCHED</div>} />
-        </Routes>
-        <XpToastHost />
-        <XpSocket />
-      </div>
+                {/* Fallback */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <XpToastHost />
+              <XpSocket />
+            </div>
+          </RouteErrorBoundary>
         </SocketProvider>
       </ToastProvider>
     </BackendLoader>
