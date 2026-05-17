@@ -26,6 +26,13 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/api/auth/signup`,
