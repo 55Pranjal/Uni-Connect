@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import CommunityCard from "../components/cards/CommunityCard";
+import { CardSkeletonGrid } from "../components/Skeleton";
 import { useMyCommunities } from "../hooks/useCommunities";
 
 const CommunityPage = () => {
@@ -102,19 +103,8 @@ const CommunityPage = () => {
         </div>
 
         {/* CONTENT */}
-        {loading ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-20">
-            <span
-              className="h-6 w-6 rounded-full animate-spin"
-              style={{
-                border: "2px solid var(--pl-line)",
-                borderTopColor: "var(--pl-ink)",
-              }}
-            />
-            <p className="text-sm" style={{ color: "var(--pl-ink-3)" }}>
-              Loading communities…
-            </p>
-          </div>
+        {loading && !data ? (
+          <CardSkeletonGrid kind="community" count={6} />
         ) : filtered.length === 0 ? (
           <div className="py-20 text-center max-w-md mx-auto">
             <p

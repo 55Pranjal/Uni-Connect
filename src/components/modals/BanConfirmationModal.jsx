@@ -1,4 +1,6 @@
+import { useRef } from "react";
 import api from "../../api/api";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 const BanConfirmationModal = ({
   isOpen,
@@ -7,6 +9,9 @@ const BanConfirmationModal = ({
   member,
   onSuccess,
 }) => {
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, onClose, isOpen);
+
   if (!isOpen) return null;
 
   const handleBan = async () => {
@@ -21,8 +26,8 @@ const BanConfirmationModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
-      <div className="bg-white p-6 rounded-xl w-80">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" role="dialog" aria-modal="true">
+      <div ref={modalRef} className="bg-white p-6 rounded-xl w-80">
         <h3 className="font-semibold text-red-600 mb-3">Ban Member</h3>
 
         <p className="text-sm mb-4">

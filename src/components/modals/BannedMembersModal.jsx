@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../../api/api";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 const BannedMembersModal = ({ isOpen, onClose, communityId, myRole }) => {
   const [banned, setBanned] = useState([]);
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, onClose, isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -32,8 +35,8 @@ const BannedMembersModal = ({ isOpen, onClose, communityId, myRole }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" role="dialog" aria-modal="true">
+      <div ref={modalRef} className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6">
         <h2 className="text-lg font-bold mb-4">Banned Members</h2>
 
         {banned.length === 0 ? (

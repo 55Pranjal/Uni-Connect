@@ -106,6 +106,7 @@ const Navbar = () => {
               <Link
                 to="/connections"
                 title="Connections"
+                aria-label="Connections"
                 className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-lg transition"
                 style={{ color: "var(--pl-ink-2)" }}
                 onMouseEnter={(e) => {

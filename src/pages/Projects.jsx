@@ -569,7 +569,7 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
             <h2 className="text-xl font-extrabold text-slate-800">
               {isEdit ? "Edit Project" : "🚀 Post a Project"}
             </h2>
-            <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
+            <button onClick={onClose} aria-label="Close" className="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
           </div>
 
           {error && (

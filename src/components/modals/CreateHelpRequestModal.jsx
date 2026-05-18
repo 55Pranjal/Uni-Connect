@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 const CreateHelpRequestModal = ({ isOpen, onClose, onCreate }) => {
   const [form, setForm] = useState({
@@ -7,6 +8,8 @@ const CreateHelpRequestModal = ({ isOpen, onClose, onCreate }) => {
     skillTags: [],
   });
   const [tagInput, setTagInput] = useState("");
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, onClose, isOpen);
 
   if (!isOpen) return null;
 
@@ -36,8 +39,8 @@ const CreateHelpRequestModal = ({ isOpen, onClose, onCreate }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-lg flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
+      <div ref={modalRef} className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-lg flex flex-col max-h-[90vh]">
         <h3 className="text-xl font-bold mb-4 text-slate-800">Post a Help Request</h3>
 
         <div className="flex-1 overflow-y-auto pr-1">
@@ -75,6 +78,7 @@ const CreateHelpRequestModal = ({ isOpen, onClose, onCreate }) => {
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(tag)}
+                    aria-label={`Remove tag ${tag}`}
                     className="text-orange-600 hover:text-orange-800 focus:outline-none"
                   >
                     ×

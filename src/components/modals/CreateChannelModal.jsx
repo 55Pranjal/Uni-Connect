@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 const CreateChannelModal = ({ isOpen, onClose, onCreate }) => {
   const [form, setForm] = useState({
@@ -6,6 +7,8 @@ const CreateChannelModal = ({ isOpen, onClose, onCreate }) => {
     type: "text",
     skillTag: "",
   });
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, onClose, isOpen);
 
   if (!isOpen) return null;
 
@@ -17,8 +20,8 @@ const CreateChannelModal = ({ isOpen, onClose, onCreate }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white w-96 rounded-2xl p-6 shadow-lg">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" role="dialog" aria-modal="true">
+      <div ref={modalRef} className="bg-white w-96 rounded-2xl p-6 shadow-lg">
         <h3 className="text-lg font-semibold mb-4">Create Channel</h3>
 
         <input

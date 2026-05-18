@@ -1,8 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import api from "../../api/api";
 import KickConfirmationModal from "../modals/KickConfirmationModal";
 import BanConfirmationModal from "../modals/BanConfirmationModal";
 import MuteConfirmationModal from "../modals/MuteConfirmationModal";
+import useFocusTrap from "../../hooks/useFocusTrap";
 // import TransferOwnershipModal from "./TransferOwnershipModal";
 
 const CommunityMembersModal = ({
@@ -18,6 +19,12 @@ const CommunityMembersModal = ({
   const [kickTarget, setKickTarget] = useState(null);
   const [banTarget, setBanTarget] = useState(null);
   const [muteTarget, setMuteTarget] = useState(null);
+
+  const modalRef = useRef(null);
+  // Only trap focus on the outer members modal when no submodal is open —
+  // the submodals install their own trap, which fights ours otherwise.
+  const submodalOpen = !!kickTarget || !!banTarget || !!muteTarget;
+  useFocusTrap(modalRef, onClose, isOpen && !submodalOpen);
 
   // const [transferTarget, setTransferTarget] = useState(null);
 
@@ -96,8 +103,8 @@ const CommunityMembersModal = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-        <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 max-h-[80vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" role="dialog" aria-modal="true">
+        <div ref={modalRef} className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 max-h-[80vh] overflow-y-auto">
           <h2 className="text-lg font-bold mb-4">Community Members</h2>
 
           {loading ? (
