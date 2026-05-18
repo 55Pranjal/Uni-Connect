@@ -9,7 +9,6 @@ import {
   acceptConnectionRequest,
 } from "../api/connection";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 import CommunityCard from "../components/cards/CommunityCard";
 import { invalidate } from "../lib/queryEvents";
@@ -22,7 +21,6 @@ const DiscoverPage = () => {
   const [activeTab, setActiveTab] = useState("users");
 
   const { token, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
 
   /* ================= HANDLE COMMUNITY DELETE ================= */
 
@@ -31,7 +29,7 @@ const DiscoverPage = () => {
       const deletedId = e.detail;
 
       setResults((prev) =>
-        prev.filter((community) => community._id !== deletedId),
+        prev.filter((community) => community._id !== deletedId)
       );
     };
 
@@ -97,8 +95,8 @@ const DiscoverPage = () => {
   const updateConnectionStatus = (userId, status) => {
     setResults((prev) =>
       prev.map((u) =>
-        u._id === userId ? { ...u, connectionStatus: status } : u,
-      ),
+        u._id === userId ? { ...u, connectionStatus: status } : u
+      )
     );
   };
 
@@ -141,10 +139,7 @@ const DiscoverPage = () => {
               Find your{" "}
               <span style={{ color: "var(--pl-accent)" }}>people</span>.
             </h1>
-            <p
-              className="mt-4 text-lg"
-              style={{ color: "var(--pl-ink-2)" }}
-            >
+            <p className="mt-4 text-lg" style={{ color: "var(--pl-ink-2)" }}>
               Search by name, skill, or community — results appear as you type.
             </p>
           </div>
@@ -244,10 +239,7 @@ const DiscoverPage = () => {
               >
                 Start typing — anything.
               </p>
-              <p
-                className="text-sm mt-2"
-                style={{ color: "var(--pl-ink-3)" }}
-              >
+              <p className="text-sm mt-2" style={{ color: "var(--pl-ink-3)" }}>
                 A name, a skill ("React"), a community, or just a vibe.
               </p>
             </div>
@@ -259,10 +251,7 @@ const DiscoverPage = () => {
               >
                 No matches for "{query}".
               </p>
-              <p
-                className="text-sm mt-2"
-                style={{ color: "var(--pl-ink-3)" }}
-              >
+              <p className="text-sm mt-2" style={{ color: "var(--pl-ink-3)" }}>
                 Try a different keyword or switch sections.
               </p>
             </div>

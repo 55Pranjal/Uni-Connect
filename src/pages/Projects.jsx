@@ -5,13 +5,13 @@ import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { getAvatarUrl } from "../utils/avatar";
+import api from "../api/api";
 import {
   getAllProjects,
   createProject,
   updateProject,
   deleteProject,
   sendCollabRequest,
-  withdrawCollabRequest,
   removeCollaborator,
   getMyProjects,
   getProjectRoom,
@@ -22,8 +22,18 @@ import {
 ═══════════════════════════════════════════════════════════════ */
 const STATUS_OPTIONS = ["open", "in-progress", "completed"];
 const ALL_TAGS = [
-  "Web Dev", "Mobile", "AI/ML", "Data Science", "Blockchain",
-  "IoT", "Game Dev", "DevOps", "UI/UX", "Research", "Open Source", "Hardware",
+  "Web Dev",
+  "Mobile",
+  "AI/ML",
+  "Data Science",
+  "Blockchain",
+  "IoT",
+  "Game Dev",
+  "DevOps",
+  "UI/UX",
+  "Research",
+  "Open Source",
+  "Hardware",
 ];
 
 const STATUS_STYLES = {
@@ -34,8 +44,14 @@ const STATUS_STYLES = {
 
 const COLLAB_STYLES = {
   none: { label: "Collaborate", cls: "pl-btn !px-3 !py-1.5 !text-xs" },
-  pending: { label: "Pending…", cls: "bg-neutral-100 text-neutral-500 cursor-not-allowed px-3 py-1.5 rounded-xl text-xs font-medium" },
-  accepted: { label: "Collaborator ✓", cls: "bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-medium" },
+  pending: {
+    label: "Pending…",
+    cls: "bg-neutral-100 text-neutral-500 cursor-not-allowed px-3 py-1.5 rounded-xl text-xs font-medium",
+  },
+  accepted: {
+    label: "Collaborator ✓",
+    cls: "bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-xl text-xs font-medium",
+  },
 };
 
 const EMPTY_FORM = {
@@ -66,7 +82,9 @@ const Tag = ({ label }) => (
 );
 
 const StatusBadge = ({ status }) => (
-  <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_STYLES[status] || STATUS_STYLES.open}`}>
+  <span
+    className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_STYLES[status] || STATUS_STYLES.open}`}
+  >
     {status}
   </span>
 );
@@ -78,16 +96,35 @@ const Spinner = ({ size = 5 }) => (
     fill="none"
     viewBox="0 0 24 24"
   >
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    />
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8v8H4z"
+    />
   </svg>
 );
 
 /* ═══════════════════════════════════════════════════════════════
    PROJECT CARD
 ═══════════════════════════════════════════════════════════════ */
-const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete, onEdit }) => {
-  const isOwner = project.owner?._id === currentUserId || project.owner === currentUserId;
+const ProjectCard = ({
+  project,
+  currentUserId,
+  onOpen,
+  onCollabToggle,
+  onDelete,
+  onEdit,
+}) => {
+  const isOwner =
+    project.owner?._id === currentUserId || project.owner === currentUserId;
 
   const myRequest = project.collaborationRequests?.find(
     (r) => (r.user?._id || r.user) === currentUserId
@@ -95,10 +132,10 @@ const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete,
   const collabStatus = isOwner
     ? "owner"
     : myRequest?.status === "accepted"
-    ? "accepted"
-    : myRequest
-    ? "pending"
-    : "none";
+      ? "accepted"
+      : myRequest
+        ? "pending"
+        : "none";
 
   const ownerAvatarUrl = getAvatarUrl(project.owner?.avatarSeed || "default");
 
@@ -127,9 +164,13 @@ const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete,
         {/* Tags */}
         {project.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {project.tags.slice(0, 4).map((t) => <Tag key={t} label={t} />)}
+            {project.tags.slice(0, 4).map((t) => (
+              <Tag key={t} label={t} />
+            ))}
             {project.tags.length > 4 && (
-              <span className="text-xs text-slate-400">+{project.tags.length - 4} more</span>
+              <span className="text-xs text-slate-400">
+                +{project.tags.length - 4} more
+              </span>
             )}
           </div>
         )}
@@ -137,7 +178,8 @@ const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete,
         {/* Tech stack */}
         {project.techStack && (
           <p className="text-xs text-slate-400 truncate">
-            <span className="font-medium text-slate-500">Stack: </span>{project.techStack}
+            <span className="font-medium text-slate-500">Stack: </span>
+            {project.techStack}
           </p>
         )}
 
@@ -162,14 +204,28 @@ const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete,
 
             {/* Collaborators count chip */}
             {(() => {
-              const count = project.collaborationRequests?.filter((r) => r.status === "accepted").length || 0;
+              const count =
+                project.collaborationRequests?.filter(
+                  (r) => r.status === "accepted"
+                ).length || 0;
               return count > 0 ? (
                 <span
                   className="flex-shrink-0 text-xs bg-orange-50 text-orange-700 px-2.5 py-0.5 rounded-full font-medium border border-orange-200 flex items-center gap-1"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-5-4m-4 6H2v-2a4 4 0 015-4m4 0a4 4 0 100-8 4 4 0 010 8zm6-8a3 3 0 11-6 0 3 3 0 016 0zM7 8a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-3 h-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a4 4 0 00-5-4m-4 6H2v-2a4 4 0 015-4m4 0a4 4 0 100-8 4 4 0 010 8zm6-8a3 3 0 11-6 0 3 3 0 016 0zM7 8a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
                   </svg>
                   {count}
                 </span>
@@ -198,8 +254,12 @@ const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete,
               </>
             ) : collabStatus !== "owner" ? (
               <button
-                disabled={collabStatus === "pending" || collabStatus === "accepted"}
-                onClick={() => onCollabToggle(project._id, myRequest?._id, collabStatus)}
+                disabled={
+                  collabStatus === "pending" || collabStatus === "accepted"
+                }
+                onClick={() =>
+                  onCollabToggle(project._id, myRequest?._id, collabStatus)
+                }
                 className={`w-full text-xs px-3 py-1.5 rounded-lg font-medium transition
                             ${COLLAB_STYLES[collabStatus]?.cls}`}
               >
@@ -216,29 +276,42 @@ const ProjectCard = ({ project, currentUserId, onOpen, onCollabToggle, onDelete,
 /* ═══════════════════════════════════════════════════════════════
    PROJECT DETAIL MODAL
 ═══════════════════════════════════════════════════════════════ */
-const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit, onDelete, onRequestAction, onRemoveCollaborator, onOpenChat }) => {
+const ProjectModal = ({
+  project,
+  currentUserId,
+  onClose,
+  onCollabToggle,
+  onEdit,
+  onDelete,
+  onRequestAction,
+  onRemoveCollaborator,
+  onOpenChat,
+}) => {
   const overlayRef = useRef();
   const [chatLoading, setChatLoading] = useState(false);
-  const [chatError, setChatError]     = useState("");
+  const [chatError, setChatError] = useState("");
 
   if (!project) return null;
 
-  const isOwner = project.owner?._id === currentUserId || project.owner === currentUserId;
+  const isOwner =
+    project.owner?._id === currentUserId || project.owner === currentUserId;
   const myRequest = project.collaborationRequests?.find(
     (r) => (r.user?._id || r.user) === currentUserId
   );
   const collabStatus = isOwner
     ? "owner"
     : myRequest?.status === "accepted"
-    ? "accepted"
-    : myRequest
-    ? "pending"
-    : "none";
+      ? "accepted"
+      : myRequest
+        ? "pending"
+        : "none";
 
   const isMember = isOwner || collabStatus === "accepted";
 
-  const pendingRequests = project.collaborationRequests?.filter((r) => r.status === "pending") || [];
-  const acceptedCollabs = project.collaborationRequests?.filter((r) => r.status === "accepted") || [];
+  const pendingRequests =
+    project.collaborationRequests?.filter((r) => r.status === "pending") || [];
+  const acceptedCollabs =
+    project.collaborationRequests?.filter((r) => r.status === "accepted") || [];
 
   // Room exists once the backend has created the community (first accept)
   const hasRoom = !!project.communityId;
@@ -280,26 +353,41 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
 
           {/* Title + status */}
           <div className="flex flex-wrap items-start gap-3 mb-4">
-            <h2 className="text-2xl font-extrabold text-slate-800 flex-1">{project.title}</h2>
+            <h2 className="text-2xl font-extrabold text-slate-800 flex-1">
+              {project.title}
+            </h2>
             <StatusBadge status={project.status} />
           </div>
 
           {/* Owner info */}
           <div className="flex items-center gap-3 mb-5 pb-5 border-b border-slate-100">
-            <img src={ownerAvatarUrl} alt={project.owner?.name} className="w-10 h-10 rounded-full ring-2 ring-neutral-300" />
+            <img
+              src={ownerAvatarUrl}
+              alt={project.owner?.name}
+              className="w-10 h-10 rounded-full ring-2 ring-neutral-300"
+            />
             <div>
-              <p className="text-sm font-semibold text-slate-700">{project.owner?.name || "Unknown"}</p>
-              <p className="text-xs text-slate-400">{project.owner?.department} {project.owner?.year && `• Year ${project.owner.year}`}</p>
+              <p className="text-sm font-semibold text-slate-700">
+                {project.owner?.name || "Unknown"}
+              </p>
+              <p className="text-xs text-slate-400">
+                {project.owner?.department}{" "}
+                {project.owner?.year && `• Year ${project.owner.year}`}
+              </p>
             </div>
           </div>
 
           {/* Description */}
-          <p className="text-slate-600 text-sm leading-relaxed mb-5">{project.description}</p>
+          <p className="text-slate-600 text-sm leading-relaxed mb-5">
+            {project.description}
+          </p>
 
           {/* Tags */}
           {project.tags?.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-5">
-              {project.tags.map((t) => <Tag key={t} label={t} />)}
+              {project.tags.map((t) => (
+                <Tag key={t} label={t} />
+              ))}
             </div>
           )}
 
@@ -307,14 +395,22 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
           <div className="grid sm:grid-cols-2 gap-4 mb-5 text-sm">
             {project.techStack && (
               <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">Tech Stack</p>
-                <p className="text-slate-700 font-medium">{project.techStack}</p>
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wide mb-1">
+                  Tech Stack
+                </p>
+                <p className="text-slate-700 font-medium">
+                  {project.techStack}
+                </p>
               </div>
             )}
             {project.rolesNeeded && (
               <div className="bg-orange-50 rounded-xl p-3 border border-orange-100">
-                <p className="text-xs text-orange-400 font-medium uppercase tracking-wide mb-1">Roles Needed</p>
-                <p className="text-slate-700 font-medium">{project.rolesNeeded}</p>
+                <p className="text-xs text-orange-400 font-medium uppercase tracking-wide mb-1">
+                  Roles Needed
+                </p>
+                <p className="text-slate-700 font-medium">
+                  {project.rolesNeeded}
+                </p>
               </div>
             )}
             {project.repoUrl && (
@@ -326,7 +422,12 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                 className="bg-slate-50 rounded-xl p-3 border border-slate-100 flex items-center gap-2
                            hover:bg-slate-100 transition text-neutral-900 font-medium"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.23c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.08-.74.08-.72.08-.72 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.42-1.29.76-1.59-2.67-.3-5.47-1.34-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23A11.5 11.5 0 0 1 12 6.8c1.02.005 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.6-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
                 </svg>
                 Repository
@@ -341,8 +442,19 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                 className="bg-emerald-50 rounded-xl p-3 border border-emerald-100 flex items-center gap-2
                            hover:bg-emerald-100 transition text-emerald-600 font-medium"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
                 </svg>
                 Live Demo
               </a>
@@ -371,19 +483,27 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                         className="w-8 h-8 rounded-full ring-2 ring-amber-200"
                       />
                       <div>
-                        <p className="text-sm font-semibold text-slate-700">{req.user?.name}</p>
-                        <p className="text-xs text-slate-400">{req.user?.department}</p>
+                        <p className="text-sm font-semibold text-slate-700">
+                          {req.user?.name}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {req.user?.department}
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => onRequestAction(project._id, req._id, "accept")}
+                        onClick={() =>
+                          onRequestAction(project._id, req._id, "accept")
+                        }
                         className="text-xs px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition font-medium"
                       >
                         Accept
                       </button>
                       <button
-                        onClick={() => onRequestAction(project._id, req._id, "reject")}
+                        onClick={() =>
+                          onRequestAction(project._id, req._id, "reject")
+                        }
                         className="text-xs px-3 py-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition font-medium"
                       >
                         Reject
@@ -399,11 +519,24 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
           {acceptedCollabs.length > 0 && (
             <div className="mb-5">
               <h4 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a4 4 0 00-5-4m-4 6H2v-2a4 4 0 015-4m4 0a4 4 0 100-8 4 4 0 010 8zm6-8a3 3 0 11-6 0 3 3 0 016 0zM7 8a3 3 0 11-6 0 3 3 0 016 0z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 text-orange-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a4 4 0 00-5-4m-4 6H2v-2a4 4 0 015-4m4 0a4 4 0 100-8 4 4 0 010 8zm6-8a3 3 0 11-6 0 3 3 0 016 0zM7 8a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
                 </svg>
                 Collaborators
-                <span className="ml-auto text-xs font-medium text-slate-400">{acceptedCollabs.length}</span>
+                <span className="ml-auto text-xs font-medium text-slate-400">
+                  {acceptedCollabs.length}
+                </span>
               </h4>
               <div className="space-y-2">
                 {acceptedCollabs.map((req) => (
@@ -418,18 +551,35 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                         className="w-8 h-8 rounded-full ring-2 ring-orange-200 flex-shrink-0"
                       />
                       <div>
-                        <p className="text-sm font-semibold text-slate-700">{req.user?.name}</p>
-                        <p className="text-xs text-slate-400">{req.user?.department}</p>
+                        <p className="text-sm font-semibold text-slate-700">
+                          {req.user?.name}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          {req.user?.department}
+                        </p>
                       </div>
                     </div>
                     {isOwner && (
                       <button
-                        onClick={() => onRemoveCollaborator(project._id, req._id)}
+                        onClick={() =>
+                          onRemoveCollaborator(project._id, req._id)
+                        }
                         title="Remove collaborator"
                         className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition font-medium flex-shrink-0"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-3 h-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
                         </svg>
                         Remove
                       </button>
@@ -442,10 +592,9 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
 
           {/* CTA */}
           <div className="flex flex-col gap-3 pt-4 border-t border-slate-100">
-
             {/* Open Chat — visible to owner + accepted collabs */}
-            {isMember && (
-              hasRoom ? (
+            {isMember &&
+              (hasRoom ? (
                 <button
                   onClick={handleChatClick}
                   disabled={chatLoading}
@@ -456,41 +605,68 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                   {chatLoading ? (
                     <Spinner size={4} />
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      />
                     </svg>
                   )}
                   Open Project Chat
                 </button>
               ) : (
                 <div className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-400 text-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                    />
                   </svg>
                   Chat room opens once the first collaborator is accepted.
                 </div>
-              )
-            )}
+              ))}
 
             {/* Error from chat open */}
             {chatError && (
-              <p className="text-xs text-red-500 text-center -mt-1">{chatError}</p>
+              <p className="text-xs text-red-500 text-center -mt-1">
+                {chatError}
+              </p>
             )}
 
             <div className="flex flex-wrap gap-3">
               {isOwner ? (
                 <>
                   <button
-                    onClick={() => { onClose(); onEdit(project); }}
+                    onClick={() => {
+                      onClose();
+                      onEdit(project);
+                    }}
                     className="flex-1 py-2.5 rounded-xl border border-neutral-200 text-neutral-900
                                hover:bg-neutral-50 transition font-medium text-sm"
                   >
                     Edit Project
                   </button>
                   <button
-                    onClick={() => { onClose(); onDelete(project._id); }}
+                    onClick={() => {
+                      onClose();
+                      onDelete(project._id);
+                    }}
                     className="flex-1 py-2.5 rounded-xl border border-red-200 text-red-500
                                hover:bg-red-50 transition font-medium text-sm"
                   >
@@ -499,21 +675,26 @@ const ProjectModal = ({ project, currentUserId, onClose, onCollabToggle, onEdit,
                 </>
               ) : (
                 <button
-                  disabled={collabStatus === "pending" || collabStatus === "accepted"}
-                  onClick={() => onCollabToggle(project._id, myRequest?._id, collabStatus)}
+                  disabled={
+                    collabStatus === "pending" || collabStatus === "accepted"
+                  }
+                  onClick={() =>
+                    onCollabToggle(project._id, myRequest?._id, collabStatus)
+                  }
                   className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition
-                              ${collabStatus === "none"
-                                ? "bg-neutral-900 text-white hover:opacity-90 shadow-md"
-                                : collabStatus === "pending"
-                                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                                : "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                              ${
+                                collabStatus === "none"
+                                  ? "bg-neutral-900 text-white hover:opacity-90 shadow-md"
+                                  : collabStatus === "pending"
+                                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                    : "bg-emerald-100 text-emerald-700 border border-emerald-200"
                               }`}
                 >
                   {collabStatus === "none"
                     ? "🚀 Request to Collaborate"
                     : collabStatus === "pending"
-                    ? "⏳ Request sent — waiting…"
-                    : "✅ You're a collaborator!"}
+                      ? "⏳ Request sent — waiting…"
+                      : "✅ You're a collaborator!"}
                 </button>
               )}
             </div>
@@ -537,11 +718,22 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
   const toggleTag = (tag) =>
-    set("tags", form.tags.includes(tag) ? form.tags.filter((t) => t !== tag) : [...form.tags, tag]);
+    set(
+      "tags",
+      form.tags.includes(tag)
+        ? form.tags.filter((t) => t !== tag)
+        : [...form.tags, tag]
+    );
 
   const handleSave = async () => {
-    if (!form.title.trim()) { setError("Title is required."); return; }
-    if (!form.description.trim()) { setError("Description is required."); return; }
+    if (!form.title.trim()) {
+      setError("Title is required.");
+      return;
+    }
+    if (!form.description.trim()) {
+      setError("Description is required.");
+      return;
+    }
     setError("");
     setSaving(true);
     try {
@@ -569,17 +761,27 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
             <h2 className="text-xl font-extrabold text-slate-800">
               {isEdit ? "Edit Project" : "🚀 Post a Project"}
             </h2>
-            <button onClick={onClose} aria-label="Close" className="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="text-slate-400 hover:text-slate-700 text-2xl leading-none"
+            >
+              ×
+            </button>
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2 mb-4">{error}</p>
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-2 mb-4">
+              {error}
+            </p>
           )}
 
           <div className="space-y-4">
             {/* Title */}
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Project Title *</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Project Title *
+              </label>
               <input
                 value={form.title}
                 onChange={(e) => set("title", e.target.value)}
@@ -591,7 +793,9 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
 
             {/* Description */}
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Description *</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Description *
+              </label>
               <textarea
                 value={form.description}
                 onChange={(e) => set("description", e.target.value)}
@@ -604,16 +808,19 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
 
             {/* Status */}
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Status</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Status
+              </label>
               <div className="mt-1 flex gap-2 flex-wrap">
                 {STATUS_OPTIONS.map((s) => (
                   <button
                     key={s}
                     onClick={() => set("status", s)}
                     className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition
-                                ${form.status === s
-                                  ? "bg-neutral-900 text-white border-neutral-900"
-                                  : "bg-white text-slate-600 border-slate-200 hover:border-neutral-400"
+                                ${
+                                  form.status === s
+                                    ? "bg-neutral-900 text-white border-neutral-900"
+                                    : "bg-white text-slate-600 border-slate-200 hover:border-neutral-400"
                                 }`}
                   >
                     {s}
@@ -624,16 +831,19 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
 
             {/* Tags */}
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tags</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Tags
+              </label>
               <div className="mt-1 flex flex-wrap gap-2">
                 {ALL_TAGS.map((tag) => (
                   <button
                     key={tag}
                     onClick={() => toggleTag(tag)}
                     className={`px-3 py-1 rounded-full text-xs font-medium border transition
-                                ${form.tags.includes(tag)
-                                  ? "bg-neutral-900 text-white border-neutral-900"
-                                  : "bg-white text-slate-600 border-slate-200 hover:border-neutral-400"
+                                ${
+                                  form.tags.includes(tag)
+                                    ? "bg-neutral-900 text-white border-neutral-900"
+                                    : "bg-white text-slate-600 border-slate-200 hover:border-neutral-400"
                                 }`}
                   >
                     {tag}
@@ -644,7 +854,9 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
 
             {/* Tech Stack */}
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Tech Stack</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Tech Stack
+              </label>
               <input
                 value={form.techStack}
                 onChange={(e) => set("techStack", e.target.value)}
@@ -656,7 +868,9 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
 
             {/* Roles Needed */}
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Roles Needed</label>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                Roles Needed
+              </label>
               <input
                 value={form.rolesNeeded}
                 onChange={(e) => set("rolesNeeded", e.target.value)}
@@ -669,7 +883,9 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
             {/* Repo URL */}
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Repository URL</label>
+                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Repository URL
+                </label>
                 <input
                   value={form.repoUrl}
                   onChange={(e) => set("repoUrl", e.target.value)}
@@ -679,7 +895,9 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Live Demo URL</label>
+                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Live Demo URL
+                </label>
                 <input
                   value={form.liveUrl}
                   onChange={(e) => set("liveUrl", e.target.value)}
@@ -705,7 +923,15 @@ const ProjectFormModal = ({ initial, onClose, onSave }) => {
               className="flex-1 py-2.5 rounded-xl bg-neutral-900
                          text-white font-semibold text-sm hover:opacity-90 transition shadow-md disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {saving ? <><Spinner size={4} /> Saving…</> : isEdit ? "Save Changes" : "Post Project"}
+              {saving ? (
+                <>
+                  <Spinner size={4} /> Saving…
+                </>
+              ) : isEdit ? (
+                "Save Changes"
+              ) : (
+                "Post Project"
+              )}
             </button>
           </div>
         </div>
@@ -732,7 +958,7 @@ const Projects = () => {
   const [filterTag, setFilterTag] = useState("all");
 
   const [selectedProject, setSelectedProject] = useState(null); // detail modal
-  const [formProject, setFormProject]   = useState(null);        // form modal
+  const [formProject, setFormProject] = useState(null); // form modal
   const [showForm, setShowForm] = useState(false);
 
   /* ── FETCH ── */
@@ -740,13 +966,14 @@ const Projects = () => {
     setLoading(true);
     setFetchError("");
     try {
-      const res = activeTab === "mine"
-        ? await getMyProjects()
-        : await getAllProjects({
-            ...(search.trim() && { search: search.trim() }),
-            ...(filterStatus !== "all" && { status: filterStatus }),
-            ...(filterTag !== "all" && { tags: filterTag }),
-          });
+      const res =
+        activeTab === "mine"
+          ? await getMyProjects()
+          : await getAllProjects({
+              ...(search.trim() && { search: search.trim() }),
+              ...(filterStatus !== "all" && { status: filterStatus }),
+              ...(filterTag !== "all" && { tags: filterTag }),
+            });
       setProjects(res.data?.projects || res.data || []);
     } catch (err) {
       setFetchError("Failed to load projects. Please try again.");
@@ -814,8 +1041,11 @@ const Projects = () => {
       const res = await sendCollabRequest(projectId);
       const updatedProject = res.data?.project || res.data;
       if (updatedProject) {
-        setProjects((p) => p.map((x) => (x._id === projectId ? updatedProject : x)));
-        if (selectedProject?._id === projectId) setSelectedProject(updatedProject);
+        setProjects((p) =>
+          p.map((x) => (x._id === projectId ? updatedProject : x))
+        );
+        if (selectedProject?._id === projectId)
+          setSelectedProject(updatedProject);
       } else {
         // optimistic update
         setProjects((p) =>
@@ -825,7 +1055,11 @@ const Projects = () => {
                   ...x,
                   collaborationRequests: [
                     ...(x.collaborationRequests || []),
-                    { _id: Date.now().toString(), user: { _id: user._id, name: user.name }, status: "pending" },
+                    {
+                      _id: Date.now().toString(),
+                      user: { _id: user._id, name: user.name },
+                      status: "pending",
+                    },
                   ],
                 }
               : x
@@ -849,16 +1083,22 @@ const Projects = () => {
       const res = await removeCollaborator(projectId, reqId);
       const updatedProject = res.data?.project || res.data;
       if (updatedProject) {
-        setProjects((p) => p.map((x) => (x._id === projectId ? updatedProject : x)));
+        setProjects((p) =>
+          p.map((x) => (x._id === projectId ? updatedProject : x))
+        );
         setSelectedProject(updatedProject);
       } else {
         // optimistic update
         const strip = (p) => ({
           ...p,
-          collaborationRequests: p.collaborationRequests.filter((r) => r._id !== reqId),
+          collaborationRequests: p.collaborationRequests.filter(
+            (r) => r._id !== reqId
+          ),
         });
         setProjects((p) => p.map((x) => (x._id === projectId ? strip(x) : x)));
-        setSelectedProject((prev) => (prev?._id === projectId ? strip(prev) : prev));
+        setSelectedProject((prev) =>
+          prev?._id === projectId ? strip(prev) : prev
+        );
       }
     } catch {
       /* api interceptor surfaces the toast */
@@ -873,12 +1113,13 @@ const Projects = () => {
           ? `/projects/${projectId}/collaborate/${reqId}/accept`
           : `/projects/${projectId}/collaborate/${reqId}/reject`;
 
-      const { default: api } = await import("../api/api");
       const res = await api.put(endpoint);
       const updatedProject = res.data?.project || res.data;
 
       if (updatedProject) {
-        setProjects((p) => p.map((x) => (x._id === projectId ? updatedProject : x)));
+        setProjects((p) =>
+          p.map((x) => (x._id === projectId ? updatedProject : x))
+        );
         setSelectedProject(updatedProject);
       } else {
         // optimistic
@@ -888,7 +1129,12 @@ const Projects = () => {
               ? {
                   ...x,
                   collaborationRequests: x.collaborationRequests.map((r) =>
-                    r._id === reqId ? { ...r, status: action === "accept" ? "accepted" : "rejected" } : r
+                    r._id === reqId
+                      ? {
+                          ...r,
+                          status: action === "accept" ? "accepted" : "rejected",
+                        }
+                      : r
                   ),
                 }
               : x
@@ -899,7 +1145,12 @@ const Projects = () => {
             ? {
                 ...prev,
                 collaborationRequests: prev.collaborationRequests.map((r) =>
-                  r._id === reqId ? { ...r, status: action === "accept" ? "accepted" : "rejected" } : r
+                  r._id === reqId
+                    ? {
+                        ...r,
+                        status: action === "accept" ? "accepted" : "rejected",
+                      }
+                    : r
                 ),
               }
             : prev
@@ -927,7 +1178,10 @@ const Projects = () => {
       <Navbar />
 
       {/* ── PAGE HEADER ── */}
-      <section className="relative pl-page" style={{ background: "var(--pl-bg)" }}>
+      <section
+        className="relative pl-page"
+        style={{ background: "var(--pl-bg)" }}
+      >
         <div className="pl-soft-glow" />
         <div className="relative max-w-7xl mx-auto px-5 sm:px-8 pt-12 sm:pt-16 pb-10">
           <div className="pl-reveal flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
@@ -943,17 +1197,17 @@ const Projects = () => {
                 Build something{" "}
                 <span style={{ color: "var(--pl-accent)" }}>real</span>.
               </h1>
-              <p
-                className="mt-4 text-lg"
-                style={{ color: "var(--pl-ink-2)" }}
-              >
+              <p className="mt-4 text-lg" style={{ color: "var(--pl-ink-2)" }}>
                 Pitch what you're working on. Find teammates. Open a private
                 room and ship.
               </p>
             </div>
             {isAuthenticated && (
               <button
-                onClick={() => { setFormProject(null); setShowForm(true); }}
+                onClick={() => {
+                  setFormProject(null);
+                  setShowForm(true);
+                }}
                 className="pl-btn shrink-0"
               >
                 <svg
@@ -963,7 +1217,11 @@ const Projects = () => {
                   stroke="currentColor"
                   strokeWidth={1.8}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
                 Post a project
               </button>
@@ -974,11 +1232,9 @@ const Projects = () => {
 
       {/* ── MAIN CONTENT ── */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 pb-16 relative z-10 -mt-6 md:-mt-8">
-
         {/* ── FILTER CARD ── */}
         <div className="bg-white rounded-2xl shadow-lg border border-slate-100 p-4 md:p-5 mb-8">
           <div className="flex flex-col md:flex-row gap-4">
-
             {/* Tabs */}
             {isAuthenticated && (
               <div className="flex rounded-xl overflow-hidden border border-slate-200 flex-shrink-0 w-full md:w-auto">
@@ -987,9 +1243,10 @@ const Projects = () => {
                     key={tab}
                     onClick={() => setActiveTab(tab)}
                     className={`flex-1 md:flex-none px-4 py-2 text-sm font-semibold transition
-                                ${activeTab === tab
-                                  ? "bg-neutral-900 text-white"
-                                  : "bg-white text-slate-600 hover:bg-slate-50"
+                                ${
+                                  activeTab === tab
+                                    ? "bg-neutral-900 text-white"
+                                    : "bg-white text-slate-600 hover:bg-slate-50"
                                 }`}
                   >
                     {tab === "all" ? "All Projects" : "My Projects"}
@@ -1000,11 +1257,19 @@ const Projects = () => {
 
             {/* Search */}
             <div className="relative flex-1">
-              <svg xmlns="http://www.w3.org/2000/svg"
-                   className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                />
               </svg>
               <input
                 type="text"
@@ -1024,7 +1289,11 @@ const Projects = () => {
                          focus:outline-none focus:ring-2 focus:ring-neutral-400 text-slate-600 font-medium"
             >
               <option value="all">All Status</option>
-              {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
             </select>
 
             {/* Tag filter */}
@@ -1035,7 +1304,11 @@ const Projects = () => {
                          focus:outline-none focus:ring-2 focus:ring-neutral-400 text-slate-600 font-medium"
             >
               <option value="all">All Tags</option>
-              {ALL_TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
+              {ALL_TAGS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -1043,7 +1316,11 @@ const Projects = () => {
         {/* ── STATS ROW ── */}
         {!loading && displayed.length > 0 && (
           <p className="text-sm text-slate-400 mb-5">
-            Showing <span className="font-semibold text-slate-600">{displayed.length}</span> project{displayed.length !== 1 ? "s" : ""}
+            Showing{" "}
+            <span className="font-semibold text-slate-600">
+              {displayed.length}
+            </span>{" "}
+            project{displayed.length !== 1 ? "s" : ""}
             {filterStatus !== "all" ? ` · ${filterStatus}` : ""}
             {filterTag !== "all" ? ` · ${filterTag}` : ""}
           </p>
@@ -1069,7 +1346,9 @@ const Projects = () => {
           <div className="text-center py-24">
             <div className="text-6xl mb-4">🧑‍💻</div>
             <h3 className="text-xl font-bold text-slate-700 mb-2">
-              {activeTab === "mine" ? "You haven't posted any projects yet." : "No projects found."}
+              {activeTab === "mine"
+                ? "You haven't posted any projects yet."
+                : "No projects found."}
             </h3>
             <p className="text-slate-400 text-sm mb-6">
               {activeTab === "mine"
@@ -1078,7 +1357,10 @@ const Projects = () => {
             </p>
             {isAuthenticated && (
               <button
-                onClick={() => { setFormProject(null); setShowForm(true); }}
+                onClick={() => {
+                  setFormProject(null);
+                  setShowForm(true);
+                }}
                 className="px-6 py-2.5 rounded-xl bg-neutral-900
                            text-white font-semibold text-sm shadow-md hover:opacity-90 transition"
               >
@@ -1095,7 +1377,10 @@ const Projects = () => {
                 currentUserId={user?._id}
                 onOpen={setSelectedProject}
                 onCollabToggle={handleCollabToggle}
-                onEdit={(p) => { setFormProject(p); setShowForm(true); }}
+                onEdit={(p) => {
+                  setFormProject(p);
+                  setShowForm(true);
+                }}
                 onDelete={handleDelete}
               />
             ))}
@@ -1112,7 +1397,10 @@ const Projects = () => {
           currentUserId={user?._id}
           onClose={() => setSelectedProject(null)}
           onCollabToggle={handleCollabToggle}
-          onEdit={(p) => { setFormProject(p); setShowForm(true); }}
+          onEdit={(p) => {
+            setFormProject(p);
+            setShowForm(true);
+          }}
           onDelete={handleDelete}
           onRequestAction={handleRequestAction}
           onRemoveCollaborator={handleRemoveCollaborator}
@@ -1124,7 +1412,10 @@ const Projects = () => {
       {showForm && (
         <ProjectFormModal
           initial={formProject}
-          onClose={() => { setShowForm(false); setFormProject(null); }}
+          onClose={() => {
+            setShowForm(false);
+            setFormProject(null);
+          }}
           onSave={formProject ? handleUpdate : handleCreate}
         />
       )}
