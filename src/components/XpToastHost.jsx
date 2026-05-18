@@ -154,6 +154,9 @@ const XpToastHost = () => {
 
   return (
     <div
+      role="status"
+      aria-live="polite"
+      aria-atomic="false"
       className={`pl-toast-host fixed z-[100] flex flex-col-reverse gap-3 pointer-events-none bottom-4 inset-x-4 sm:bottom-5 sm:left-auto sm:right-5 sm:w-auto sm:max-w-sm${
         paused ? " is-paused" : ""
       }`}

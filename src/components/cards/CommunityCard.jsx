@@ -81,6 +81,9 @@ const CommunityCard = ({ community, mode = "discover" }) => {
                   e.stopPropagation();
                   setMenuOpen((prev) => !prev);
                 }}
+                aria-label="Community options"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
                 className="rounded-md w-7 h-7 flex items-center justify-center transition"
                 style={{ color: "var(--pl-ink-3)" }}
                 onMouseEnter={(e) => {

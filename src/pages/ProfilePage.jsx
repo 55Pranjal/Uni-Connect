@@ -7,6 +7,7 @@ import { getAvatarUrl } from "../utils/avatar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import TierBadge from "../components/TierBadge";
+import { Skeleton } from "../components/Skeleton";
 
 const ProfilePage = () => {
   // ✅ Correct hook usage — only at top level
@@ -205,19 +206,25 @@ const ProfilePage = () => {
     return (
       <>
         <Navbar />
-        <div
-          className="min-h-[60vh] flex flex-col items-center justify-center gap-3"
-          style={{ color: "var(--pl-ink-3)" }}
-        >
-          <span
-            className="h-6 w-6 rounded-full animate-spin"
-            style={{
-              border: "2px solid var(--pl-line)",
-              borderTopColor: "var(--pl-ink)",
-            }}
-          />
-          <p className="text-sm">Loading profile…</p>
-        </div>
+        <main className="flex-1 w-full max-w-5xl mx-auto px-5 sm:px-8 py-10 space-y-10 pl-page">
+          {/* Avatar + name lines */}
+          <section className="pt-4">
+            <div className="flex items-center gap-6">
+              <Skeleton className="w-20 h-20 sm:w-24 sm:h-24 rounded-full shrink-0" />
+              <div className="flex-1 min-w-0 space-y-3">
+                <Skeleton className="h-8 w-1/2" />
+                <Skeleton className="h-4 w-1/3" />
+              </div>
+            </div>
+          </section>
+
+          {/* Three-card skill row */}
+          <section className="grid sm:grid-cols-3 gap-3">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-20 rounded-2xl" />
+            ))}
+          </section>
+        </main>
         <Footer />
       </>
     );

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SkillCard from "../components/cards/SkillCard";
+import { CardSkeletonGrid } from "../components/Skeleton";
 import { acceptConnectionRequest, removeConnection } from "../api/connection";
 import { useConnections } from "../hooks/useConnections";
 
@@ -195,19 +196,8 @@ const ConnectionsPage = () => {
           </div>
 
           {/* Content */}
-          {loading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-20">
-              <span
-                className="h-6 w-6 rounded-full animate-spin"
-                style={{
-                  border: "2px solid var(--pl-line)",
-                  borderTopColor: "var(--pl-ink)",
-                }}
-              />
-              <p className="text-sm" style={{ color: "var(--pl-ink-3)" }}>
-                Loading connections…
-              </p>
-            </div>
+          {loading && !data ? (
+            <CardSkeletonGrid kind="skill" count={6} />
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {activeTab === "incoming" &&

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SkillCard from "../components/cards/SkillCard";
+import { CardSkeletonGrid } from "../components/Skeleton";
 
 import {
   sendConnectionRequest,
@@ -231,21 +232,10 @@ const DiscoverPage = () => {
 
           {/* RESULTS */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-20">
-              <span
-                className="h-7 w-7 rounded-full animate-spin"
-                style={{
-                  border: "2px solid var(--pl-line)",
-                  borderTopColor: "var(--pl-ink)",
-                }}
-              />
-              <p
-                className="text-sm"
-                style={{ color: "var(--pl-ink-3)" }}
-              >
-                Searching…
-              </p>
-            </div>
+            <CardSkeletonGrid
+              kind={activeTab === "communities" ? "community" : "skill"}
+              count={6}
+            />
           ) : query.trim().length < 2 ? (
             <div className="py-20 text-center max-w-md mx-auto">
               <p

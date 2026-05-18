@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../../api/api";
 import { useToast } from "../../context/ToastContext";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 const RenameCommunityModal = ({
   isOpen,
@@ -12,6 +13,8 @@ const RenameCommunityModal = ({
   const { notify } = useToast();
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, onClose, isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -44,8 +47,8 @@ const RenameCommunityModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]">
-      <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[60]" role="dialog" aria-modal="true">
+      <div ref={modalRef} className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm">
         <h2 className="text-lg font-semibold mb-4">Rename Community</h2>
 
         <input

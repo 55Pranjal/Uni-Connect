@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import api from "../../api/api";
+import useFocusTrap from "../../hooks/useFocusTrap";
 
 const KickConfirmationModal = ({
   isOpen,
@@ -9,6 +10,8 @@ const KickConfirmationModal = ({
   onSuccess,
 }) => {
   const [loading, setLoading] = useState(false);
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, onClose, isOpen && !!member);
 
   if (!isOpen || !member) return null;
 
@@ -30,8 +33,8 @@ const KickConfirmationModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
-      <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]" role="dialog" aria-modal="true">
+      <div ref={modalRef} className="bg-white w-full max-w-sm rounded-2xl shadow-xl p-6">
         <h3 className="text-lg font-semibold mb-2 text-red-600">
           Remove Member
         </h3>

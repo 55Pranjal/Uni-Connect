@@ -63,6 +63,7 @@ const SkillCard = ({
                   });
                   if (ok) onRemove(userId);
                 }}
+                aria-label={`Remove ${name} from your connections`}
                 title="Remove"
                 className="pl-btn-ghost"
                 style={{
