@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SkillCard from "../components/cards/SkillCard";
@@ -8,16 +8,34 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import TierBadge from "../components/TierBadge";
 import { Skeleton } from "../components/Skeleton";
+import useFocusTrap from "../hooks/useFocusTrap";
 
 const ProfilePage = () => {
   // ✅ Correct hook usage — only at top level
-  const { user: authUser, logout } = useAuth();
+  const { logout } = useAuth();
   const token = localStorage.getItem("token");
 
   const [showCardModal, setShowCardModal] = useState(false);
   const [showProfileSkillsModal, setShowProfileSkillsModal] = useState(false);
   const [showEditAboutModal, setShowEditAboutModal] = useState(false);
   const [showEditInfoModal, setShowEditInfoModal] = useState(false);
+
+  // Focus traps for the two inline modals (the reusable SkillSelectModal at
+  // the bottom of this file installs its own). Hook is enabled only while the
+  // matching `show*` flag is true, so the ref doesn't fight with the unmounted
+  // case where `.current` is null.
+  const aboutModalRef = useRef(null);
+  const infoModalRef = useRef(null);
+  useFocusTrap(
+    aboutModalRef,
+    () => setShowEditAboutModal(false),
+    showEditAboutModal
+  );
+  useFocusTrap(
+    infoModalRef,
+    () => setShowEditInfoModal(false),
+    showEditInfoModal
+  );
 
   const [user, setUser] = useState(null);
   const [cardSkills, setCardSkills] = useState([]);
@@ -50,7 +68,7 @@ const ProfilePage = () => {
           `${import.meta.env.VITE_BACKEND_URL}/api/user/me`,
           {
             headers: { Authorization: `Bearer ${token}` },
-          },
+          }
         );
 
         const data = await res.json();
@@ -67,8 +85,8 @@ const ProfilePage = () => {
         if (data.user.cardSkills?.length === 3) {
           setCardSkills(
             data.user.skills.filter((s) =>
-              data.user.cardSkills.includes(s.name),
-            ),
+              data.user.cardSkills.includes(s.name)
+            )
           );
         } else {
           setCardSkills(data.user.skills?.slice(0, 3) || []);
@@ -77,8 +95,8 @@ const ProfilePage = () => {
         if (data.user.profileSkills?.length === 4) {
           setProfileSkills(
             data.user.skills.filter((s) =>
-              data.user.profileSkills.includes(s.name),
-            ),
+              data.user.profileSkills.includes(s.name)
+            )
           );
         } else {
           setProfileSkills(data.user.skills?.slice(0, 4) || []);
@@ -105,7 +123,7 @@ const ProfilePage = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(aboutForm),
-        },
+        }
       );
 
       const data = await res.json();
@@ -130,7 +148,7 @@ const ProfilePage = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(infoForm),
-        },
+        }
       );
 
       const data = await res.json();
@@ -377,10 +395,7 @@ const ProfilePage = () => {
               >
                 How others see you
               </h2>
-              <p
-                className="text-sm mt-1"
-                style={{ color: "var(--pl-ink-3)" }}
-              >
+              <p className="text-sm mt-1" style={{ color: "var(--pl-ink-3)" }}>
                 This is the card people see in Discover and Connections.
               </p>
             </div>
@@ -426,15 +441,9 @@ const ProfilePage = () => {
           </div>
 
           <div className="pl-card p-5 space-y-3">
-            <p
-              className="leading-relaxed"
-              style={{ color: "var(--pl-ink-2)" }}
-            >
+            <p className="leading-relaxed" style={{ color: "var(--pl-ink-2)" }}>
               {user.bio || (
-                <span
-                  className="italic"
-                  style={{ color: "var(--pl-ink-3)" }}
-                >
+                <span className="italic" style={{ color: "var(--pl-ink-3)" }}>
                   No bio added yet. Tell people what you're into!
                 </span>
               )}
@@ -551,10 +560,7 @@ const ProfilePage = () => {
           </h2>
           <div className="pl-card p-5 flex items-center justify-between flex-wrap gap-3">
             <div>
-              <p
-                className="text-xs"
-                style={{ color: "var(--pl-ink-3)" }}
-              >
+              <p className="text-xs" style={{ color: "var(--pl-ink-3)" }}>
                 Signed in as
               </p>
               <p
@@ -602,8 +608,16 @@ const ProfilePage = () => {
 
       {/* EDIT ABOUT MODAL */}
       {showEditAboutModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4">
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Edit About"
+        >
+          <div
+            ref={aboutModalRef}
+            className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4"
+          >
             <h3 className="text-lg font-bold">Edit About</h3>
 
             <textarea
@@ -643,10 +657,7 @@ const ProfilePage = () => {
               >
                 Cancel
               </button>
-              <button
-                onClick={saveAbout}
-                className="pl-btn"
-              >
+              <button onClick={saveAbout} className="pl-btn">
                 Save
               </button>
             </div>
@@ -656,8 +667,16 @@ const ProfilePage = () => {
 
       {/* EDIT INFO MODAL */}
       {showEditInfoModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4">
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Edit Info"
+        >
+          <div
+            ref={infoModalRef}
+            className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4"
+          >
             <h3 className="text-lg font-bold">Edit Info</h3>
 
             <textarea
@@ -697,10 +716,7 @@ const ProfilePage = () => {
               >
                 Cancel
               </button>
-              <button
-                onClick={saveInfo}
-                className="pl-btn"
-              >
+              <button onClick={saveInfo} className="pl-btn">
                 Save
               </button>
             </div>
@@ -748,6 +764,8 @@ const SkillSelectModal = ({
   onClose,
 }) => {
   const [newSkill, setNewSkill] = useState("");
+  const modalRef = useRef(null);
+  useFocusTrap(modalRef, onClose);
 
   const displaySkills = [
     ...skills,
@@ -765,8 +783,16 @@ const SkillSelectModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4">
+    <div
+      className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl w-full max-w-md p-6 space-y-4"
+      >
         <h3 className="text-lg font-bold">{title}</h3>
 
         {/* ✅ ALWAYS AVAILABLE */}
@@ -777,10 +803,7 @@ const SkillSelectModal = ({
             placeholder="Add a skill (e.g. React)"
             className="flex-1 border rounded-lg px-3 py-2"
           />
-          <button
-            onClick={addNewSkill}
-            className="pl-btn"
-          >
+          <button onClick={addNewSkill} className="pl-btn">
             Add
           </button>
         </div>
@@ -801,7 +824,7 @@ const SkillSelectModal = ({
                   onChange={() => {
                     if (isSelected) {
                       setSelected((prev) =>
-                        prev.filter((s) => s.name !== skill.name),
+                        prev.filter((s) => s.name !== skill.name)
                       );
                     } else if (selected.length < max) {
                       setSelected((prev) => [...prev, skill]);
@@ -818,10 +841,7 @@ const SkillSelectModal = ({
           <button onClick={onClose} className="border px-4 py-2 rounded-lg">
             Cancel
           </button>
-          <button
-            onClick={onSave}
-            className="pl-btn"
-          >
+          <button onClick={onSave} className="pl-btn">
             Save
           </button>
         </div>

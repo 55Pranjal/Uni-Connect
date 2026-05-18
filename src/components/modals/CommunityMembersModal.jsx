@@ -11,7 +11,6 @@ const CommunityMembersModal = ({
   onClose,
   communityId,
   currentUserId,
-  myRole,
 }) => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -65,7 +64,7 @@ const CommunityMembersModal = ({
     const id = userId?.toString();
 
     setMembers((prev) =>
-      prev.filter((member) => member.userId?._id?.toString() !== id),
+      prev.filter((member) => member.userId?._id?.toString() !== id)
     );
   };
 
@@ -78,8 +77,8 @@ const CommunityMembersModal = ({
       prev.map((member) =>
         member.userId?._id?.toString() === id
           ? { ...member, status: "muted" }
-          : member,
-      ),
+          : member
+      )
     );
   };
 
@@ -91,8 +90,8 @@ const CommunityMembersModal = ({
 
       setMembers((prev) =>
         prev.map((m) =>
-          m.userId._id === member.userId._id ? { ...m, status: "active" } : m,
-        ),
+          m.userId._id === member.userId._id ? { ...m, status: "active" } : m
+        )
       );
     } catch {
       /* api interceptor surfaces the toast */
@@ -103,8 +102,15 @@ const CommunityMembersModal = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" role="dialog" aria-modal="true">
-        <div ref={modalRef} className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 max-h-[80vh] overflow-y-auto">
+      <div
+        className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div
+          ref={modalRef}
+          className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 max-h-[80vh] overflow-y-auto"
+        >
           <h2 className="text-lg font-bold mb-4">Community Members</h2>
 
           {loading ? (

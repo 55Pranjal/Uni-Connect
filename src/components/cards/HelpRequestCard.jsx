@@ -16,7 +16,6 @@ const getStatusColor = (status) => {
 const HelpRequestCard = ({ request, currentUserId, onClaim, onResolve }) => {
   const isPoster = request.postedBy?._id === currentUserId;
   const isResolved = request.status === "resolved";
-  const isInProgress = request.status === "in-progress";
   const isOpen = request.status === "open";
 
   const [resolverIdInput, setResolverIdInput] = useState("");

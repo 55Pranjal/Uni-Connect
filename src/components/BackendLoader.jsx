@@ -10,7 +10,7 @@ const BackendLoader = ({ children }) => {
       try {
         await api.get("/health");
         setBackendReady(true);
-      } catch (err) {
+      } catch {
         setTimeout(wakeBackend, 2000);
       }
     };
