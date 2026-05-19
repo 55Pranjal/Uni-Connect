@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import api from "../api/api";
 import Navbar from "../components/Navbar.jsx";
 import { useAuth } from "../context/AuthContext";
@@ -19,15 +19,25 @@ const DMChatPage = () => {
 
   const userId = user?._id;
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  // `?highlight=<messageId>` deep-link target (set by ModerationPage's
+  // "Go to thread" link). Same semantics as in CommunityChatPage.
+  const highlightId = searchParams.get("highlight");
+
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSocketReady, setIsSocketReady] = useState(false);
   const [typingUsers, setTypingUsers] = useState([]);
   const [reportTarget, setReportTarget] = useState(null);
+  const [activeHighlight, setActiveHighlight] = useState(null);
 
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const didHighlightRef = useRef(false);
+  // See CommunityChatPage for the rationale — capture highlight intent at
+  // mount so the auto-scroll guard survives the query-param strip.
+  const wantedHighlightRef = useRef(!!highlightId);
 
   /* ================= FETCH DM MESSAGES ================= */
   useEffect(() => {
@@ -97,8 +107,36 @@ const DMChatPage = () => {
 
   /* ================= AUTO SCROLL ================= */
   useEffect(() => {
+    if (wantedHighlightRef.current && !didHighlightRef.current) return;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typingUsers]);
+
+  /* ================= HIGHLIGHT (deep link from moderation) ================= */
+  useEffect(() => {
+    if (!highlightId || loading || messages.length === 0) return;
+    if (didHighlightRef.current) return;
+
+    const node = document.querySelector(
+      `[data-msg-id="${CSS.escape(highlightId)}"]`
+    );
+    if (!node) return;
+
+    didHighlightRef.current = true;
+    node.scrollIntoView({ behavior: "smooth", block: "center" });
+    setActiveHighlight(highlightId);
+
+    const clearTimer = setTimeout(() => setActiveHighlight(null), 2500);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("highlight");
+        return next;
+      },
+      { replace: true }
+    );
+
+    return () => clearTimeout(clearTimer);
+  }, [highlightId, loading, messages, setSearchParams]);
 
   /* ================= HANDLE TYPING ================= */
   const handleTyping = (value) => {
@@ -190,9 +228,10 @@ const DMChatPage = () => {
                 return (
                   <div
                     key={msg._id}
+                    data-msg-id={msg._id}
                     className={`group flex items-end gap-1.5 ${
-                      isMe ? "justify-end" : "justify-start"
-                    }`}
+                      activeHighlight === msg._id ? "msg-highlight " : ""
+                    }${isMe ? "justify-end" : "justify-start"}`}
                   >
                     <div
                       className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm shadow-sm ${

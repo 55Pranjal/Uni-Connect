@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useOutletContext } from "react-router-dom";
+import { useParams, useOutletContext, useSearchParams } from "react-router-dom";
 
 import api from "../api/api";
 import { useAuth } from "../context/AuthContext";
@@ -17,6 +17,12 @@ const CommunityChatPage = () => {
   const { user } = useAuth();
   const { myRole } = useOutletContext();
   const socket = useSocket();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // `?highlight=<messageId>` deep-link target (set by ModerationPage's
+  // "Go to thread" link). Causes the page to scroll to that message instead
+  // of the bottom on first load, and applies a one-shot pulse animation.
+  const highlightId = searchParams.get("highlight");
 
   const [messages, setMessages] = useState([]);
   const [channelType, setChannelType] = useState("text");
@@ -24,9 +30,17 @@ const CommunityChatPage = () => {
   const [loading, setLoading] = useState(true);
   const [typingUsers, setTypingUsers] = useState([]);
   const [reportTarget, setReportTarget] = useState(null);
+  const [activeHighlight, setActiveHighlight] = useState(null);
 
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const didHighlightRef = useRef(false);
+  // Captured at first render: did this navigation arrive WITH a ?highlight=
+  // param? We hold onto this in a ref because the highlight effect later
+  // strips the query param via setSearchParams — without this ref, the
+  // auto-scroll effect would re-run once highlightId became null and bounce
+  // the view back to the bottom, hiding the message we just scrolled to.
+  const wantedHighlightRef = useRef(!!highlightId);
 
   /* ================= FETCH MESSAGES ================= */
   useEffect(() => {
@@ -98,8 +112,49 @@ const CommunityChatPage = () => {
 
   /* ================= AUTO SCROLL ================= */
   useEffect(() => {
+    // Suppress the jump-to-bottom while the highlight scroll is still
+    // pending. Note: we check `wantedHighlightRef` (captured at mount) and
+    // NOT the live `highlightId` value — the highlight effect strips the
+    // query param after running, which would otherwise flip this guard
+    // off and cause an immediate jump that hides the message we just
+    // scrolled to.
+    if (wantedHighlightRef.current && !didHighlightRef.current) return;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typingUsers]);
+
+  /* ================= HIGHLIGHT (deep link from moderation) =================
+     When `?highlight=<messageId>` is in the URL, find that message's DOM
+     node, scroll it into view, and add a class that pulses once. Then strip
+     the query param so a refresh doesn't re-trigger the animation, and a
+     manual scroll-to-bottom isn't blocked next time the messages list
+     updates. */
+  useEffect(() => {
+    if (!highlightId || loading || messages.length === 0) return;
+    if (didHighlightRef.current) return;
+
+    const node = document.querySelector(
+      `[data-msg-id="${CSS.escape(highlightId)}"]`
+    );
+    if (!node) return; // message isn't in the current page (deleted, paginated out, …)
+
+    didHighlightRef.current = true;
+    node.scrollIntoView({ behavior: "smooth", block: "center" });
+    setActiveHighlight(highlightId);
+
+    const clearTimer = setTimeout(() => setActiveHighlight(null), 2500);
+    // Drop the query param so refresh / a new highlight click both work
+    // cleanly. `replace` avoids polluting browser history.
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("highlight");
+        return next;
+      },
+      { replace: true }
+    );
+
+    return () => clearTimeout(clearTimer);
+  }, [highlightId, loading, messages, setSearchParams]);
 
   /* ================= HANDLE TYPING ================= */
   const handleTyping = (value) => {
@@ -179,9 +234,10 @@ const CommunityChatPage = () => {
             return (
               <div
                 key={msg._id}
+                data-msg-id={msg._id}
                 className={`group flex items-end gap-1.5 ${
                   isMe ? "justify-end" : "justify-start"
-                }`}
+                } ${activeHighlight === msg._id ? "msg-highlight" : ""}`}
               >
                 <div
                   className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm shadow-sm ${
