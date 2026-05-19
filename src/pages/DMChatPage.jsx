@@ -4,6 +4,7 @@ import api from "../api/api";
 import Navbar from "../components/Navbar.jsx";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
+import ReportModal from "../components/modals/ReportModal";
 
 const formatTime = (date) =>
   new Date(date).toLocaleTimeString([], {
@@ -23,6 +24,7 @@ const DMChatPage = () => {
   const [loading, setLoading] = useState(true);
   const [isSocketReady, setIsSocketReady] = useState(false);
   const [typingUsers, setTypingUsers] = useState([]);
+  const [reportTarget, setReportTarget] = useState(null);
 
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -188,7 +190,9 @@ const DMChatPage = () => {
                 return (
                   <div
                     key={msg._id}
-                    className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+                    className={`group flex items-end gap-1.5 ${
+                      isMe ? "justify-end" : "justify-start"
+                    }`}
                   >
                     <div
                       className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm shadow-sm ${
@@ -212,6 +216,31 @@ const DMChatPage = () => {
                         {formatTime(msg.createdAt)}
                       </div>
                     </div>
+
+                    {!isMe && (
+                      <button
+                        type="button"
+                        onClick={() => setReportTarget(msg._id)}
+                        aria-label="Report message"
+                        title="Report message"
+                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 transition text-slate-400 hover:text-red-500 p-1"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={1.8}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4 4v16M4 4h12l-2 4 2 4H4"
+                          />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -240,6 +269,13 @@ const DMChatPage = () => {
           </div>
         )}
       </main>
+
+      <ReportModal
+        open={!!reportTarget}
+        onClose={() => setReportTarget(null)}
+        targetType="message"
+        targetId={reportTarget}
+      />
     </>
   );
 };

@@ -10,7 +10,11 @@ import DeleteChannelModal from "../components/modals/DeleteChannelModal";
 import RenameChannelModal from "../components/modals/RenameChannelModal";
 import LeaveCommunityModal from "../components/modals/LeaveCommunityModal";
 import BannedMembersModal from "../components/modals/BannedMembersModal";
-import { createHelpRequest, claimHelpRequest, resolveHelpRequest } from "../api/helpRequests";
+import {
+  createHelpRequest,
+  claimHelpRequest,
+  resolveHelpRequest,
+} from "../api/helpRequests";
 import CreateHelpRequestModal from "../components/modals/CreateHelpRequestModal";
 import HelpRequestCard from "../components/cards/HelpRequestCard";
 import { notifyXp, refreshXp } from "../components/XpToastHost";
@@ -41,9 +45,9 @@ const ChannelPage = () => {
   const patchChannels = useCallback(
     (updater) =>
       setCommunityData((prev) =>
-        prev ? { ...prev, channels: updater(prev.channels) } : prev,
+        prev ? { ...prev, channels: updater(prev.channels) } : prev
       ),
-    [setCommunityData],
+    [setCommunityData]
   );
 
   const [showModal, setShowModal] = useState(false);
@@ -71,8 +75,7 @@ const ChannelPage = () => {
   useEffect(() => {
     if (!communityData || channelId) return;
     if (channels.length === 0) return;
-    const defaultChannel =
-      channels.find((c) => c.isDefault) || channels[0];
+    const defaultChannel = channels.find((c) => c.isDefault) || channels[0];
     navigate(`/community/${communityId}/channel/${defaultChannel._id}`, {
       replace: true,
     });
@@ -97,7 +100,7 @@ const ChannelPage = () => {
 
     const handleChannelRenamed = ({ channelId: renamedId, name }) => {
       patchChannels((prev) =>
-        prev.map((c) => (c._id === renamedId ? { ...c, name } : c)),
+        prev.map((c) => (c._id === renamedId ? { ...c, name } : c))
       );
     };
 
@@ -114,7 +117,7 @@ const ChannelPage = () => {
 
     const handleHelpUpdated = (hr) => {
       setHelpRequests((prev) =>
-        (prev ?? []).map((x) => (x._id === hr._id ? hr : x)),
+        (prev ?? []).map((x) => (x._id === hr._id ? hr : x))
       );
     };
 
@@ -167,7 +170,7 @@ const ChannelPage = () => {
   /* ================= RENAME CHANNEL ================= */
   const handleRenameSuccess = (id, newName) => {
     patchChannels((prev) =>
-      prev.map((c) => (c._id === id ? { ...c, name: newName } : c)),
+      prev.map((c) => (c._id === id ? { ...c, name: newName } : c))
     );
   };
 
@@ -193,7 +196,7 @@ const ChannelPage = () => {
     try {
       const res = await claimHelpRequest(id);
       setHelpRequests((prev) =>
-        (prev ?? []).map((hr) => (hr._id === id ? res.data.helpRequest : hr)),
+        (prev ?? []).map((hr) => (hr._id === id ? res.data.helpRequest : hr))
       );
     } catch {
       /* api interceptor surfaces the toast */
@@ -204,7 +207,7 @@ const ChannelPage = () => {
     try {
       const res = await resolveHelpRequest(id, data);
       setHelpRequests((prev) =>
-        (prev ?? []).map((hr) => (hr._id === id ? res.data.helpRequest : hr)),
+        (prev ?? []).map((hr) => (hr._id === id ? res.data.helpRequest : hr))
       );
       const newLevel = res.data.levelUpResults?.resolverNewLevel;
       if (newLevel) {
@@ -224,11 +227,15 @@ const ChannelPage = () => {
 
       <div className="h-[90vh] flex bg-slate-100 relative overflow-hidden">
         {/* ===== LEFT SIDEBAR ===== */}
-        <aside className={`${showSidebar ? 'flex absolute z-40 h-full shadow-2xl' : 'hidden'} md:flex md:static w-64 bg-white border-r flex-col`}>
+        <aside
+          className={`${showSidebar ? "flex absolute z-40 h-full shadow-2xl" : "hidden"} md:flex md:static w-64 bg-white border-r flex-col`}
+        >
           {/* Community Header */}
           <div className="p-4 border-b relative">
             <div className="flex items-center justify-between">
-              <h2 className="font-bold text-lg truncate pr-2">{community?.name}</h2>
+              <h2 className="font-bold text-lg truncate pr-2">
+                {community?.name}
+              </h2>
 
               <div className="flex items-center gap-1">
                 <button
@@ -245,7 +252,19 @@ const ChannelPage = () => {
                   aria-label="Close sidebar"
                   className="md:hidden text-slate-400 hover:text-slate-600"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -279,6 +298,18 @@ const ChannelPage = () => {
                   Banned Users
                 </button>
 
+                {myRole === "admin" && (
+                  <button
+                    onClick={() => {
+                      setCommunityMenuOpen(false);
+                      navigate(`/community/${communityId}/moderation`);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-slate-100"
+                  >
+                    Moderation
+                  </button>
+                )}
+
                 <button
                   onClick={() => {
                     setShowLeaveModal(true);
@@ -306,12 +337,12 @@ const ChannelPage = () => {
                   setShowSidebar(false);
                 }}
                 className={`relative group flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-100 ${
-                  ch._id === channelId ? "text-neutral-900 font-medium bg-orange-50" : ""
+                  ch._id === channelId
+                    ? "text-neutral-900 font-medium bg-orange-50"
+                    : ""
                 }`}
               >
-                <span className="flex-1 text-left truncate">
-                  # {ch.name}
-                </span>
+                <span className="flex-1 text-left truncate"># {ch.name}</span>
 
                 {canManageChannels && !ch.isDefault && (
                   <button
@@ -378,14 +409,26 @@ const ChannelPage = () => {
           {/* Header Area */}
           <div className="flex items-center gap-3 border-b bg-white px-4 md:px-6 py-3 shrink-0 overflow-x-auto min-h-[60px]">
             {!showSidebar && (
-              <button 
+              <button
                 onClick={() => setShowSidebar(true)}
                 className="md:hidden p-2 bg-white rounded-lg shadow-sm border border-slate-200 text-slate-600 shrink-0"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
               </button>
             )}
-            
+
             {/* Tab Selection */}
             {channelId && (
               <div className="flex bg-slate-100 p-1 rounded-lg shrink-0">
@@ -419,8 +462,12 @@ const ChannelPage = () => {
             <div className="flex-1 overflow-y-auto bg-slate-50 p-6 flex flex-col">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-800">Help Requests</h3>
-                  <p className="text-sm text-slate-500">Ask for help or assist others in this channel.</p>
+                  <h3 className="text-xl font-bold text-slate-800">
+                    Help Requests
+                  </h3>
+                  <p className="text-sm text-slate-500">
+                    Ask for help or assist others in this channel.
+                  </p>
                 </div>
                 <button
                   onClick={() => setShowHelpModal(true)}
