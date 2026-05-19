@@ -15,6 +15,7 @@ import CommunityPage from "./pages/CommunityPage.jsx";
 import CreateCommunity from "./pages/CreateCommunity.jsx";
 import ChannelPage from "./pages/ChannelPage.jsx";
 import CommunityChatPage from "./pages/CommunityChatPage.jsx";
+import ModerationPage from "./pages/ModerationPage.jsx";
 import Projects from "./pages/Projects.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import BackendLoader from "./components/BackendLoader.jsx";
@@ -45,16 +46,32 @@ function App() {
 
                 {/* Protected Routes */}
                 <Route element={<ProtectedRoute />}>
-                  <Route path="/profileDecision" element={<ProfileDecision />} />
+                  <Route
+                    path="/profileDecision"
+                    element={<ProfileDecision />}
+                  />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/discover" element={<DiscoverPage />} />
                   <Route path="/connections" element={<ConnectionsPage />} />
                   <Route path="/dm/:conversationId" element={<DMChatPage />} />
                   <Route path="/communities" element={<CommunityPage />} />
-                  <Route path="/create-community" element={<CreateCommunity />} />
-                  <Route path="/community/:communityId" element={<ChannelPage />}>
-                    <Route path="channel/:channelId" element={<CommunityChatPage />} />
+                  <Route
+                    path="/create-community"
+                    element={<CreateCommunity />}
+                  />
+                  <Route
+                    path="/community/:communityId/moderation"
+                    element={<ModerationPage />}
+                  />
+                  <Route
+                    path="/community/:communityId"
+                    element={<ChannelPage />}
+                  >
+                    <Route
+                      path="channel/:channelId"
+                      element={<CommunityChatPage />}
+                    />
                   </Route>
                 </Route>
 
