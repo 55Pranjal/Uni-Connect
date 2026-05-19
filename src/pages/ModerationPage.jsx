@@ -341,10 +341,14 @@ const ReportTarget = ({ report, communityId }) => {
   // Hydrated message
   if (type === "message" && target && typeof target === "object") {
     const sender = target.senderId;
+    // Deep-link includes `?highlight=<msgId>` so the chat page scrolls to
+    // the reported message and flashes it once (see CommunityChatPage /
+    // DMChatPage). Without this the admin lands at the bottom of the
+    // channel and has to hunt for the message themselves.
     const toThread = target.channelId
-      ? `/community/${communityId}/channel/${target.channelId}`
+      ? `/community/${communityId}/channel/${target.channelId}?highlight=${target._id}`
       : target.conversationId
-        ? `/dm/${target.conversationId}`
+        ? `/dm/${target.conversationId}?highlight=${target._id}`
         : null;
     return (
       <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
