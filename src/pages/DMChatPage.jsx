@@ -60,7 +60,7 @@ const DMChatPage = () => {
     /* ===== RECEIVE DM ===== */
     const handleReceiveDM = (msg) => {
       setMessages((prev) =>
-        prev.some((m) => m._id === msg._id) ? prev : [...prev, msg],
+        prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]
       );
     };
 
@@ -128,14 +128,11 @@ const DMChatPage = () => {
     if (!isSocketReady) return;
 
     try {
-      const res = await api.post(`/dm/${conversationId}/messages`, {
+      await api.post(`/dm/${conversationId}/messages`, {
         content: text,
       });
 
-      socket.emit("sendDM", {
-        messageId: res.data._id,
-        conversationId,
-      });
+      // Server broadcasts the DM to `conversation:{id}` from POST /dm.
 
       setText("");
 

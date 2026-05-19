@@ -9,11 +9,11 @@ import { useAuth } from "../context/AuthContext";
 import TierBadge from "../components/TierBadge";
 import { Skeleton } from "../components/Skeleton";
 import useFocusTrap from "../hooks/useFocusTrap";
+import api from "../api/api";
 
 const ProfilePage = () => {
   // ✅ Correct hook usage — only at top level
   const { logout } = useAuth();
-  const token = localStorage.getItem("token");
 
   const [showCardModal, setShowCardModal] = useState(false);
   const [showProfileSkillsModal, setShowProfileSkillsModal] = useState(false);
@@ -62,17 +62,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        if (!token) throw new Error("Not authenticated");
-
-        const res = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/user/me`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message);
+        const { data } = await api.get("/user/me");
 
         setUser(data.user);
 
@@ -102,33 +92,19 @@ const ProfilePage = () => {
           setProfileSkills(data.user.skills?.slice(0, 4) || []);
         }
       } catch (err) {
-        setError(err.message);
+        setError(err?.response?.data?.message || err.message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchUser();
-  }, [token]);
+  }, []);
 
   /* ================= SAVE ABOUT ================= */
   const saveAbout = async () => {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/profile`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(aboutForm),
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
+      await api.patch("/user/profile", aboutForm);
       setUser((prev) => ({ ...prev, ...aboutForm }));
       setShowEditAboutModal(false);
     } catch (err) {
@@ -139,21 +115,7 @@ const ProfilePage = () => {
   /* ================= SAVE INFO ================= */
   const saveInfo = async () => {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/profile`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(infoForm),
-        }
-      );
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
+      await api.patch("/user/profile", infoForm);
       setUser((prev) => ({ ...prev, ...infoForm }));
       setShowEditInfoModal(false);
     } catch (err) {
@@ -163,15 +125,8 @@ const ProfilePage = () => {
 
   /* ================= SAVE CARD SKILLS ================= */
   const saveCardSkills = async () => {
-    await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/card-skills`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        cardSkills: cardSkills.map((s) => s.name),
-      }),
+    await api.patch("/user/card-skills", {
+      cardSkills: cardSkills.map((s) => s.name),
     });
 
     setShowCardModal(false);
@@ -185,27 +140,11 @@ const ProfilePage = () => {
       .filter((name) => !existingSkillNames.includes(name));
 
     if (newSkills.length > 0) {
-      await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/profile`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          skillsCanHelp: newSkills,
-        }),
-      });
+      await api.patch("/user/profile", { skillsCanHelp: newSkills });
     }
 
-    await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/profile-skills`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        profileSkills: profileSkills.map((s) => s.name),
-      }),
+    await api.patch("/user/profile-skills", {
+      profileSkills: profileSkills.map((s) => s.name),
     });
 
     setUser((prev) => ({
