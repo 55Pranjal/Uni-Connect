@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { Logomark } from "../components/Navbar";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import AuthShell, { SideHero, PreviewChip } from "../components/AuthShell";
+import api from "../api/api";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -23,21 +24,25 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/auth/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        },
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Login failed");
+      // Use the shared axios client so withCredentials=true is set — raw
+      // fetch defaults to "same-origin" which causes the browser to silently
+      // discard the Set-Cookie response on a cross-origin POST. Without that
+      // cookie every subsequent /me, /me/xp, … returns 401.
+      // suppressToast: this page shows the error inline, so skip the global
+      // toast (otherwise the same error appears twice).
+      const { data } = await api.post("/auth/login", formData, {
+        suppressToast: true,
+      });
       if (!data.user || !data.token) throw new Error("Invalid login response");
       login(data.token, data.user);
       navigate("/");
     } catch (err) {
-      setError(err.message);
+      const serverMsg =
+        err?.response?.data?.error?.message ??
+        err?.response?.data?.message ??
+        err?.message ??
+        "Login failed";
+      setError(serverMsg);
     } finally {
       setLoading(false);
     }
@@ -57,12 +62,18 @@ const Login = () => {
             "See where your project rooms moved",
           ]}
           preview={
-            <PreviewChip name="3 new connection requests" text="Tap to review" />
+            <PreviewChip
+              name="3 new connection requests"
+              text="Tap to review"
+            />
           }
         />
       }
     >
-      <Link to="/" className="lg:hidden flex items-center gap-2 justify-center mb-10">
+      <Link
+        to="/"
+        className="lg:hidden flex items-center gap-2 justify-center mb-10"
+      >
         <Logomark />
         <span
           className="font-semibold"

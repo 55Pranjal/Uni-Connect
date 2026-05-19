@@ -8,7 +8,10 @@ const BackendLoader = ({ children }) => {
   useEffect(() => {
     const wakeBackend = async () => {
       try {
-        await api.get("/health");
+        // suppressToast: while the backend is cold-starting we already show
+        // a dedicated "Waking up server" screen — no need to also fire a
+        // "Network error" toast every 2s from the global axios interceptor.
+        await api.get("/health", { suppressToast: true });
         setBackendReady(true);
       } catch {
         setTimeout(wakeBackend, 2000);

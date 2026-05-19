@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { Logomark } from "../components/Navbar";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import AuthShell, { SideHero } from "../components/AuthShell";
+import api from "../api/api";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -34,21 +35,24 @@ const Signup = () => {
     }
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/auth/signup`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        },
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Signup failed");
+      // Use the shared axios client so withCredentials=true is set — raw
+      // fetch defaults to "same-origin" which causes the browser to silently
+      // discard the Set-Cookie response on a cross-origin POST.
+      // suppressToast: this page shows the error inline, so skip the global
+      // toast (otherwise the same error appears twice).
+      const { data } = await api.post("/auth/signup", formData, {
+        suppressToast: true,
+      });
       if (!data.user || !data.token) throw new Error("Invalid signup response");
       login(data.token, data.user);
       navigate("/ProfileDecision");
     } catch (err) {
-      setError(err.message);
+      const serverMsg =
+        err?.response?.data?.error?.message ??
+        err?.response?.data?.message ??
+        err?.message ??
+        "Signup failed";
+      setError(serverMsg);
     } finally {
       setLoading(false);
     }
