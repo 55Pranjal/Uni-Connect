@@ -61,7 +61,7 @@ const CommunityChatPage = () => {
 
     const handleReceive = (msg) => {
       setMessages((prev) =>
-        prev.some((m) => m._id === msg._id) ? prev : [...prev, msg],
+        prev.some((m) => m._id === msg._id) ? prev : [...prev, msg]
       );
     };
 
@@ -125,20 +125,12 @@ const CommunityChatPage = () => {
     if (!text.trim()) return;
 
     try {
-      const res = await api.post(`/channels/${channelId}/messages`, {
+      await api.post(`/channels/${channelId}/messages`, {
         content: text,
       });
 
-      // Trigger the server's room broadcast. Without this emit, the message
-      // is persisted but the `channel:{id}` room never receives `receiveMessage`,
-      // so the sender (and other tabs) only see the message after a reload.
-      // Mirrors DMChatPage's `sendDM` emit pattern.
-      const messageId = res.data?.message?._id;
-      if (socket && messageId) {
-        socket.emit("sendMessage", { messageId, channelId });
-      }
-
-      // Also stop any lingering typing indicator immediately.
+      // Server broadcasts the new message to `channel:{id}` from POST /messages.
+      // Stop any lingering typing indicator immediately.
       if (socket) {
         socket.emit("typing:stop", { channelId, userId: user._id });
       }
