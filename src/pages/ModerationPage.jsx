@@ -10,6 +10,7 @@ import {
   updateReport,
   getCommunityAuditLog,
 } from "../api/reports";
+import { getAvatarUrl } from "../utils/avatar";
 
 const STATUS_OPTIONS = ["open", "resolved", "dismissed"];
 const AUDIT_LIMIT = 100;
@@ -225,6 +226,7 @@ const ModerationPage = () => {
 
         {tab === "reports" ? (
           <ReportsTab
+            communityId={communityId}
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
             reports={reports}
@@ -246,6 +248,7 @@ const ModerationPage = () => {
    REPORTS TAB
 ============================================================ */
 const ReportsTab = ({
+  communityId,
   statusFilter,
   setStatusFilter,
   reports,
@@ -289,6 +292,7 @@ const ReportsTab = ({
             report={r}
             statusFilter={statusFilter}
             onDecide={onDecide}
+            communityId={communityId}
           />
         ))}
       </ul>
@@ -302,10 +306,111 @@ const displayName = (ref) => {
   return ref.name || ref.email || ref._id || "—";
 };
 
-const ReportRow = ({ report, statusFilter, onDecide }) => {
+// Small avatar + name pill used in the report header.
+const UserChip = ({ user }) => {
+  if (!user || typeof user === "string") {
+    return <span className="font-medium">{displayName(user)}</span>;
+  }
+  const seed = user.avatar || user._id || user.name || "u";
+  return (
+    <span className="inline-flex items-center gap-1.5 align-middle">
+      <img
+        src={getAvatarUrl(seed)}
+        alt=""
+        className="w-5 h-5 rounded-full bg-slate-100"
+        loading="lazy"
+      />
+      <span className="font-medium">{user.name || displayName(user)}</span>
+    </span>
+  );
+};
+
+/**
+ * Renders the actual reported content. Branches on report.targetType:
+ *   - message   → quoted content + sender + "Go to thread" link
+ *   - user      → avatar + name + link to public profile
+ *   - community → name + slug
+ *   - anything missing → "[deleted]"
+ * Legacy fallback: if `target` is still a raw ObjectId string (old API
+ * shape), shows the id verbatim so triage isn't completely blocked.
+ */
+const ReportTarget = ({ report, communityId }) => {
+  const target = report.target;
+  const type = report.targetType;
+
+  // Hydrated message
+  if (type === "message" && target && typeof target === "object") {
+    const sender = target.senderId;
+    const toThread = target.channelId
+      ? `/community/${communityId}/channel/${target.channelId}`
+      : target.conversationId
+        ? `/dm/${target.conversationId}`
+        : null;
+    return (
+      <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+        <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
+          <UserChip user={sender} />
+          <span>·</span>
+          <span>{formatDateTime(target.createdAt)}</span>
+          {toThread && (
+            <Link
+              to={toThread}
+              className="ml-auto text-xs font-medium text-neutral-700 hover:underline"
+            >
+              Go to thread →
+            </Link>
+          )}
+        </div>
+        <p className="text-sm text-slate-800 whitespace-pre-wrap break-words line-clamp-6">
+          {target.content || <em className="text-slate-400">(empty)</em>}
+        </p>
+      </div>
+    );
+  }
+
+  // Hydrated user
+  if (type === "user" && target && typeof target === "object") {
+    return (
+      <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 flex items-center gap-2">
+        <UserChip user={target} />
+        <Link
+          to={`/public/${target._id}`}
+          className="ml-auto text-xs font-medium text-neutral-700 hover:underline"
+        >
+          View profile →
+        </Link>
+      </div>
+    );
+  }
+
+  // Hydrated community
+  if (type === "community" && target && typeof target === "object") {
+    return (
+      <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 flex items-center gap-2">
+        <span className="font-medium text-sm">{target.name}</span>
+        {target.slug && (
+          <span className="text-xs text-slate-500">@{target.slug}</span>
+        )}
+      </div>
+    );
+  }
+
+  // Legacy fallback — old API returned just the ObjectId.
+  if (typeof target === "string") {
+    return <p className="mt-2 text-xs font-mono text-slate-500">{target}</p>;
+  }
+
+  // Hydrated but null (deleted target) — or shape we don't recognize.
+  return (
+    <p className="mt-2 text-sm italic text-slate-400">
+      [target {target === null ? "deleted" : "unavailable"}]
+    </p>
+  );
+};
+
+const ReportRow = ({ report, statusFilter, onDecide, communityId }) => {
   const reporter =
     report.reporter ?? report.reporterId ?? report.reportedBy ?? null;
-  const target = report.target ?? report.targetId ?? null;
 
   return (
     <li className="bg-white border border-slate-200 rounded-xl p-4">
@@ -323,14 +428,20 @@ const ReportRow = ({ report, statusFilter, onDecide }) => {
             </span>
           </div>
           <p className="text-sm text-slate-700">
-            <span className="font-medium">{displayName(reporter)}</span>
-            <span className="text-slate-400"> reported </span>
-            <span className="font-mono text-xs text-slate-600">
-              {displayName(target)}
+            <UserChip user={reporter} />
+            <span className="text-slate-400">
+              {" "}
+              reported this {report.targetType}
             </span>
           </p>
+
+          <ReportTarget report={report} communityId={communityId} />
+
           {report.details && (
-            <p className="text-sm text-slate-600 mt-2 whitespace-pre-wrap">
+            <p className="text-sm text-slate-600 mt-2 whitespace-pre-wrap border-l-2 border-slate-200 pl-3">
+              <span className="text-xs font-medium text-slate-500 block mb-0.5">
+                Reporter's note
+              </span>
               {report.details}
             </p>
           )}
