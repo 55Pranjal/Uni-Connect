@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Logomark } from "../components/Navbar";
 import AuthShell from "../components/AuthShell";
+import api from "../api/api";
 
 const departments = ["CSE", "IT", "ECE", "EEE", "Mechanical", "Civil", "Other"];
 
@@ -17,16 +18,28 @@ const interestsList = [
 ];
 
 const STEPS = [
-  { num: "01", title: "Department & year", desc: "Where you study, and how far along you are." },
-  { num: "02", title: "Interests", desc: "What you're curious about — pick what fits." },
-  { num: "03", title: "Skills you can share", desc: "What you can help others with." },
+  {
+    num: "01",
+    title: "Department & year",
+    desc: "Where you study, and how far along you are.",
+  },
+  {
+    num: "02",
+    title: "Interests",
+    desc: "What you're curious about — pick what fits.",
+  },
+  {
+    num: "03",
+    title: "Skills you can share",
+    desc: "What you can help others with.",
+  },
   { num: "04", title: "About you", desc: "A short bio + your links." },
 ];
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -50,17 +63,16 @@ const Onboarding = () => {
   };
 
   const handleSubmit = async () => {
-    if (!token || saving) return;
+    if (!isAuthenticated || saving) return;
     setSaving(true);
     try {
-      await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/profile`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      // Migrated to the shared axios client. The previous raw-fetch version
+      // sent `Authorization: Bearer ${token}` where `token` from AuthContext
+      // is now the literal sentinel string "cookie" (post cookie-auth
+      // migration) — the backend silently rejected it, leaving the profile
+      // unsaved. `api` attaches the httpOnly auth cookie automatically via
+      // withCredentials.
+      await api.patch("/user/profile", formData);
       navigate("/");
     } catch (err) {
       console.error("Onboarding failed:", err);
@@ -126,10 +138,7 @@ const Onboarding = () => {
         >
           {STEPS[step - 1].title}.
         </h1>
-        <p
-          className="mt-2 text-base"
-          style={{ color: "var(--pl-ink-2)" }}
-        >
+        <p className="mt-2 text-base" style={{ color: "var(--pl-ink-2)" }}>
           {STEPS[step - 1].desc}
         </p>
       </div>
@@ -301,7 +310,7 @@ const Onboarding = () => {
         ) : (
           <button
             onClick={handleSubmit}
-            disabled={!token || saving}
+            disabled={!isAuthenticated || saving}
             className="pl-btn"
             style={{ padding: "0.75rem 1.25rem", fontSize: 14 }}
           >
@@ -344,10 +353,7 @@ const OnboardingSidebar = ({ step }) => {
             UniConnect
           </span>
         </Link>
-        <span
-          className="text-xs"
-          style={{ color: "rgba(255,255,255,0.5)" }}
-        >
+        <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
           {Math.round(progressPct)}% complete
         </span>
       </div>
@@ -372,8 +378,8 @@ const OnboardingSidebar = ({ step }) => {
           className="mt-5 text-base leading-relaxed"
           style={{ color: "rgba(255,255,255,0.7)", maxWidth: 420 }}
         >
-          Four short steps — under a minute. The more you share, the better
-          your matches get.
+          Four short steps — under a minute. The more you share, the better your
+          matches get.
         </p>
 
         <div className="mt-10">
@@ -512,8 +518,7 @@ const ChipGrid = ({ items, selected, onToggle }) => (
           }
           onMouseEnter={(e) => {
             if (!isSelected) {
-              e.currentTarget.style.boxShadow =
-                "inset 0 0 0 1px var(--pl-ink)";
+              e.currentTarget.style.boxShadow = "inset 0 0 0 1px var(--pl-ink)";
               e.currentTarget.style.color = "var(--pl-ink)";
             }
           }}

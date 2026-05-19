@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../context/AuthContext";
+import api from "../api/api";
 
 /**
  * Drop-in Google sign-in button. Renders Google's own styled button via
@@ -26,16 +27,17 @@ const GoogleSignInButton = ({ onError }) => {
 
     setSubmitting(true);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/auth/google`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ credential }),
-        },
+      // Use the shared axios client so `withCredentials: true` is set —
+      // raw fetch() defaults to "same-origin" credentials, which causes the
+      // browser to silently discard the auth cookie on a cross-origin
+      // response. The cookie is the source of truth post-login; without it
+      // every subsequent /me, /me/xp, etc. returns 401.
+      const { data } = await api.post(
+        "/auth/google",
+        { credential },
+        { suppressToast: true }
       );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Google sign-in failed");
+
       if (!data.user || !data.token) {
         throw new Error("Invalid Google sign-in response");
       }
@@ -43,7 +45,12 @@ const GoogleSignInButton = ({ onError }) => {
       login(data.token, data.user);
       navigate(data.user.isOnboarded ? "/" : "/profileDecision");
     } catch (err) {
-      onError?.(err.message);
+      const serverMsg =
+        err?.response?.data?.error?.message ??
+        err?.response?.data?.message ??
+        err?.message ??
+        "Google sign-in failed";
+      onError?.(serverMsg);
     } finally {
       setSubmitting(false);
     }

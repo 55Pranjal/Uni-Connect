@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { getMyXp } from "../api/user";
+import { useAuth } from "../context/AuthContext";
 
 /**
  * Compact level + XP progress indicator for the Navbar / profile.
@@ -7,8 +8,13 @@ import { getMyXp } from "../api/user";
  * Self-fetches its data and listens for a window-level `xp:refresh` event so
  * any component that awards XP can trigger a refresh by dispatching:
  *   window.dispatchEvent(new CustomEvent("xp:refresh"))
+ *
+ * Gated on `isAuthenticated` — otherwise the fetch fires on Login/Signup
+ * pages (Navbar mounts unconditionally) and produces a 401 in the console
+ * on every visit.
  */
 const LevelBadge = ({ compact = false }) => {
+  const { isAuthenticated } = useAuth();
   const [data, setData] = useState(null);
 
   const refresh = useCallback(async () => {
@@ -21,11 +27,15 @@ const LevelBadge = ({ compact = false }) => {
   }, []);
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setData(null);
+      return;
+    }
     refresh();
     const handler = () => refresh();
     window.addEventListener("xp:refresh", handler);
     return () => window.removeEventListener("xp:refresh", handler);
-  }, [refresh]);
+  }, [refresh, isAuthenticated]);
 
   if (!data) return null;
 
