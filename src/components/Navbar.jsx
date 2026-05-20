@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getAvatarUrl } from "../utils/avatar";
 import LevelBadge from "./LevelBadge";
+import NotificationBell from "./NotificationBell";
 
 const NAV_ITEMS = [
   { to: "/", label: "Home" },
@@ -75,7 +76,10 @@ const Navbar = () => {
                 }
                 style={({ isActive }) =>
                   isActive
-                    ? { color: "var(--pl-ink)", background: "var(--pl-surface)" }
+                    ? {
+                        color: "var(--pl-ink)",
+                        background: "var(--pl-surface)",
+                      }
                     : undefined
                 }
               >
@@ -102,6 +106,8 @@ const Navbar = () => {
               <div className="hidden sm:block">
                 <LevelBadge compact />
               </div>
+
+              <NotificationBell />
 
               <Link
                 to="/connections"
@@ -133,11 +139,7 @@ const Navbar = () => {
                 </svg>
               </Link>
 
-              <Link
-                to="/profile"
-                className="relative group"
-                title={user?.name}
-              >
+              <Link to="/profile" className="relative group" title={user?.name}>
                 <img
                   src={avatarUrl}
                   alt="profile"

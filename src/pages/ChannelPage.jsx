@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Outlet } from "react-router-dom";
 import api from "../api/api";
 import Navbar from "../components/Navbar";
@@ -31,7 +31,10 @@ const ChannelPage = () => {
   const { data: communityData, setData: setCommunityData } =
     useCommunity(communityId);
   const community = communityData?.community ?? null;
-  const channels = communityData?.channels ?? [];
+  const channels = useMemo(
+    () => communityData?.channels ?? [],
+    [communityData]
+  );
   const myRole = communityData?.myRole ?? null;
 
   const {
