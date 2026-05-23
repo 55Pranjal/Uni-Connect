@@ -203,9 +203,15 @@ const ProfilePage = () => {
     );
   }
 
-  const handleLogout = () => {
-    logout();
-    window.location.href = "/";
+  const handleLogout = async () => {
+    // Must await — logout() POSTs /api/auth/logout and waits for the server's
+    // Set-Cookie: token=; expires=epoch response. If we navigate before the
+    // POST settles, the browser cancels the in-flight XHR, the cookie is
+    // never cleared server-side, and the next /me call re-authenticates the
+    // "logged out" user. Reproduces only in prod because cross-origin RTT
+    // (Netlify ↔ Render) is long enough to lose the race.
+    await logout();
+    navigate("/");
   };
 
   const profileLevel = user.level ?? 1;
