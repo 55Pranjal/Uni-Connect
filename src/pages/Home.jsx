@@ -10,7 +10,10 @@ import SharedFooter from "../components/Footer";
 const Home = () => {
   const { isAuthenticated } = useAuth();
   return (
-    <div className="pl-page min-h-screen" style={{ background: "var(--pl-bg)" }}>
+    <div
+      className="pl-page min-h-screen"
+      style={{ background: "var(--pl-bg)" }}
+    >
       <SharedNavbar />
       <Hero isAuthenticated={isAuthenticated} />
       <Logos />
@@ -42,22 +45,23 @@ const Hero = ({ isAuthenticated }) => (
           >
             The campus app
             <br />
-            that{" "}
-            <span style={{ color: "var(--pl-accent)" }}>actually</span> gets
-            used.
+            that <span style={{ color: "var(--pl-accent)" }}>
+              actually
+            </span>{" "}
+            gets used.
           </h1>
           <p
             className="mt-6 text-lg leading-relaxed max-w-lg"
             style={{ color: "var(--pl-ink-2)" }}
           >
             Find classmates by skill, gather in real communities, and ship
-            projects with people you trust — all in one place, with none of
-            the algorithmic noise.
+            projects with people you trust — all in one place, with none of the
+            algorithmic noise.
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link
-              to={isAuthenticated ? "/discover" : "/signup"}
+              to={isAuthenticated ? "/discover" : "/login"}
               className="pl-btn"
             >
               {isAuthenticated ? "Open app" : "Get started — free"}
@@ -95,7 +99,10 @@ const Hero = ({ isAuthenticated }) => (
         </div>
 
         {/* Right — product visual */}
-        <div className="lg:col-span-6 relative h-[420px] sm:h-[500px] pl-reveal" style={{ animationDelay: "120ms" }}>
+        <div
+          className="lg:col-span-6 relative h-[420px] sm:h-[500px] pl-reveal"
+          style={{ animationDelay: "120ms" }}
+        >
           <HeroVisual />
         </div>
       </div>
@@ -134,9 +141,7 @@ const HeroVisual = () => (
           <p style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.2 }}>
             Priya Mehta
           </p>
-          <p style={{ fontSize: 12, color: "var(--pl-ink-3)" }}>
-            CSE · Year 3
-          </p>
+          <p style={{ fontSize: 12, color: "var(--pl-ink-3)" }}>CSE · Year 3</p>
         </div>
         <span
           className="text-xs font-medium"
@@ -265,27 +270,22 @@ const HeroVisual = () => (
 const Logos = () => (
   <section className="border-y" style={{ borderColor: "var(--pl-line)" }}>
     <div className="max-w-7xl mx-auto px-5 sm:px-8 py-10 flex flex-col sm:flex-row items-center gap-6">
-      <p
-        className="text-sm shrink-0"
-        style={{ color: "var(--pl-ink-3)" }}
-      >
+      <p className="text-sm shrink-0" style={{ color: "var(--pl-ink-3)" }}>
         Trusted at universities like
       </p>
       <div
         className="flex flex-wrap items-center justify-center sm:justify-start gap-x-10 gap-y-3 flex-1"
         style={{ color: "var(--pl-ink-4)" }}
       >
-        {["KIIT", "Stanford", "IIT-D", "MIT", "BITS Pilani", "NUS"].map(
-          (u) => (
-            <span
-              key={u}
-              className="font-semibold tracking-tight"
-              style={{ fontSize: 17, opacity: 0.6 }}
-            >
-              {u}
-            </span>
-          ),
-        )}
+        {["KIIT", "Stanford", "IIT-D", "MIT", "BITS Pilani", "NUS"].map((u) => (
+          <span
+            key={u}
+            className="font-semibold tracking-tight"
+            style={{ fontSize: 17, opacity: 0.6 }}
+          >
+            {u}
+          </span>
+        ))}
       </div>
     </div>
   </section>
@@ -312,7 +312,10 @@ const Features = () => {
   ];
 
   return (
-    <section id="features" className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
+    <section
+      id="features"
+      className="max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28"
+    >
       <div className="max-w-2xl mb-14 sm:mb-16 pl-reveal">
         <span className="pl-eyebrow">
           <span className="dot" />
@@ -326,10 +329,7 @@ const Features = () => {
           <br />
           group <span style={{ color: "var(--pl-accent)" }}>should be</span>.
         </h2>
-        <p
-          className="text-lg mt-5"
-          style={{ color: "var(--pl-ink-2)" }}
-        >
+        <p className="text-lg mt-5" style={{ color: "var(--pl-ink-2)" }}>
           Three simple primitives — students, communities, and projects — that
           plug into the rhythm of campus life.
         </p>
@@ -371,18 +371,48 @@ const Features = () => {
 };
 
 const IconUsers = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-5-4m-4 6H2v-2a4 4 0 015-4m4 0a4 4 0 100-8 4 4 0 010 8zm6-8a3 3 0 11-6 0 3 3 0 016 0zM7 8a3 3 0 11-6 0 3 3 0 016 0z" />
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={1.7}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M17 20h5v-2a4 4 0 00-5-4m-4 6H2v-2a4 4 0 015-4m4 0a4 4 0 100-8 4 4 0 010 8zm6-8a3 3 0 11-6 0 3 3 0 016 0zM7 8a3 3 0 11-6 0 3 3 0 016 0z"
+    />
   </svg>
 );
 const IconChats = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h6m-6 4h8m5-5a9 9 0 11-18 0 9 9 0 0118 0z" />
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={1.7}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M7 8h10M7 12h6m-6 4h8m5-5a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
   </svg>
 );
 const IconRocket = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+  <svg
+    className="w-5 h-5"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    strokeWidth={1.7}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M13 10V3L4 14h7v7l9-11h-7z"
+    />
   </svg>
 );
 
@@ -516,10 +546,27 @@ const Showcase = () => (
 
             <div className="flex-1 space-y-2.5 overflow-hidden">
               {[
-                { who: "Priya", text: "Pushed the Figma file — checking on it now", color: "#fed7aa" },
-                { who: "Marcus", text: "Wired up auth. Adding the connection flow next.", color: "#bae6fd" },
-                { who: "You", text: "Going to take the onboarding screens", color: "#bbf7d0", self: true },
-                { who: "Ana", text: "I'll handle copy + landing once flows are in", color: "#fbcfe8" },
+                {
+                  who: "Priya",
+                  text: "Pushed the Figma file — checking on it now",
+                  color: "#fed7aa",
+                },
+                {
+                  who: "Marcus",
+                  text: "Wired up auth. Adding the connection flow next.",
+                  color: "#bae6fd",
+                },
+                {
+                  who: "You",
+                  text: "Going to take the onboarding screens",
+                  color: "#bbf7d0",
+                  self: true,
+                },
+                {
+                  who: "Ana",
+                  text: "I'll handle copy + landing once flows are in",
+                  color: "#fbcfe8",
+                },
               ].map((m, i) => (
                 <div
                   key={i}
@@ -597,8 +644,8 @@ const Showcase = () => (
           style={{ color: "var(--pl-ink-2)" }}
         >
           When you accept a collaborator, UniConnect spins up a private chat
-          room for your project — pinned to GitHub, the live demo, the
-          repo. Less scattered chaos, more shipped work.
+          room for your project — pinned to GitHub, the live demo, the repo.
+          Less scattered chaos, more shipped work.
         </p>
 
         <ul className="mt-7 space-y-3">
@@ -650,10 +697,7 @@ const Testimonial = () => (
             color: "var(--pl-accent)",
           }}
         >
-          <span
-            className="dot"
-            style={{ background: "var(--pl-accent)" }}
-          />
+          <span className="dot" style={{ background: "var(--pl-accent)" }} />
           Heard around
         </span>
         <blockquote
@@ -665,11 +709,9 @@ const Testimonial = () => (
           }}
         >
           "Found{" "}
-          <span style={{ color: "var(--pl-accent)" }}>
-            three teammates
-          </span>{" "}
-          for my hackathon in 48 hours. UniConnect did more for me in a
-          weekend than the campus group chat did in a semester."
+          <span style={{ color: "var(--pl-accent)" }}>three teammates</span> for
+          my hackathon in 48 hours. UniConnect did more for me in a weekend than
+          the campus group chat did in a semester."
         </blockquote>
         <footer className="mt-8 flex items-center gap-3">
           <span
@@ -680,10 +722,7 @@ const Testimonial = () => (
           />
           <div>
             <p className="font-semibold">Riya Sharma</p>
-            <p
-              className="text-sm"
-              style={{ color: "rgba(255,255,255,0.55)" }}
-            >
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.55)" }}>
               CSE '27 · KIIT University
             </p>
           </div>
@@ -729,12 +768,12 @@ const FinalCTA = ({ isAuthenticated }) => (
           className="mt-5 text-lg max-w-xl mx-auto"
           style={{ color: "var(--pl-ink-2)" }}
         >
-          Free, forever for students. No ads, no algorithm — just the people
-          you actually want to talk to.
+          Free, forever for students. No ads, no algorithm — just the people you
+          actually want to talk to.
         </p>
         <div className="mt-9 flex flex-wrap justify-center gap-3">
           <Link
-            to={isAuthenticated ? "/discover" : "/signup"}
+            to={isAuthenticated ? "/discover" : "/login"}
             className="pl-btn"
             style={{ padding: "0.85rem 1.5rem", fontSize: 16 }}
           >

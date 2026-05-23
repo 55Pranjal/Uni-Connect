@@ -3,15 +3,15 @@ import axios from "axios";
 
 const AuthContext = createContext();
 
-const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 /**
  * AuthProvider — cookie-based auth.
  *
- * The JWT lives in an httpOnly cookie set by the backend on
- * /auth/login, /auth/signup, /auth/google. JS can't read it (that's the
- * point — XSS can't exfiltrate it). On every API call axios sends the cookie
+ * The JWT lives in an httpOnly cookie set by the backend on /auth/google
+ * (Google OAuth is the only sign-in path; email/password was removed to
+ * prevent fake-account abuse). JS can't read it (that's the point — XSS
+ * can't exfiltrate it). On every API call axios sends the cookie
  * automatically because `withCredentials: true` is set on the shared client.
  *
  * Boot flow:
@@ -19,10 +19,10 @@ const BACKEND_URL =
  *   2. If 200, we're logged in. Cache the user.
  *   3. If 401, no valid cookie — render as logged-out.
  *
- * login(token, userData) is called by Login.jsx / Signup.jsx / GoogleSignInButton
- * after a successful auth request. The cookie is already set by the server at
- * that point; the `token` argument is kept in the signature for backward
- * compatibility with those hand-tuned pages and is otherwise unused.
+ * login(token, userData) is called by GoogleSignInButton after a successful
+ * /auth/google round-trip. The cookie is already set by the server at that
+ * point; the `token` argument is kept in the signature for backward
+ * compatibility and is otherwise unused.
  *
  * logout() hits /api/auth/logout to clear the server cookie, then resets
  * local state. Even if the server is unreachable we still clear locally —
@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }) => {
      Signature kept as (token, userData) so Login.jsx / Signup.jsx /
      GoogleSignInButton don't need any changes. The token argument is
      intentionally unused — the cookie is the source of truth. */
-  // eslint-disable-next-line no-unused-vars
+   
   const login = (_token, userData) => {
     // Some legacy code still reads avatarSeed from localStorage; keep that
     // cache populated as a courtesy. The auth source remains the cookie.

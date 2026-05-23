@@ -1,52 +1,11 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Logomark } from "../components/Navbar";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import AuthShell, { SideHero, PreviewChip } from "../components/AuthShell";
-import api from "../api/api";
 
 const Login = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError("");
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      // Use the shared axios client so withCredentials=true is set — raw
-      // fetch defaults to "same-origin" which causes the browser to silently
-      // discard the Set-Cookie response on a cross-origin POST. Without that
-      // cookie every subsequent /me, /me/xp, … returns 401.
-      // suppressToast: this page shows the error inline, so skip the global
-      // toast (otherwise the same error appears twice).
-      const { data } = await api.post("/auth/login", formData, {
-        suppressToast: true,
-      });
-      if (!data.user || !data.token) throw new Error("Invalid login response");
-      login(data.token, data.user);
-      navigate("/");
-    } catch (err) {
-      const serverMsg =
-        err?.response?.data?.error?.message ??
-        err?.response?.data?.message ??
-        err?.message ??
-        "Login failed";
-      setError(serverMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <AuthShell
@@ -88,10 +47,11 @@ const Login = () => {
           className="pl-display"
           style={{ fontSize: "clamp(1.875rem, 3.5vw, 2.25rem)" }}
         >
-          Welcome back.
+          Welcome.
         </h1>
         <p className="mt-2 text-base" style={{ color: "var(--pl-ink-2)" }}>
-          Sign in to continue.
+          Sign in with your Google account to continue. New here? Same button —
+          your account is created on first sign-in.
         </p>
       </div>
 
@@ -108,117 +68,18 @@ const Login = () => {
         </p>
       )}
 
-      <div className="mb-5">
+      <div className="mb-4">
         <GoogleSignInButton onError={setError} />
       </div>
 
-      <div
-        className="flex items-center gap-3 mb-5"
-        style={{ color: "var(--pl-ink-3)" }}
-      >
-        <span
-          className="h-px flex-1"
-          style={{ background: "var(--pl-line-2)" }}
-        />
-        <span className="text-xs uppercase tracking-wide">or</span>
-        <span
-          className="h-px flex-1"
-          style={{ background: "var(--pl-line-2)" }}
-        />
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Field
-          label="Email"
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder="you@college.edu"
-        />
-        <Field
-          label="Password"
-          type={showPassword ? "text" : "password"}
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          placeholder="••••••••"
-          suffix={
-            <button
-              type="button"
-              onClick={() => setShowPassword((p) => !p)}
-              className="text-xs font-medium"
-              style={{ color: "var(--pl-ink-3)" }}
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          }
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="pl-btn w-full justify-center mt-2"
-          style={{ padding: "0.85rem 1.25rem", fontSize: 15 }}
-        >
-          {loading ? (
-            <>
-              <span
-                className="h-3.5 w-3.5 rounded-full animate-spin"
-                style={{
-                  border: "2px solid rgba(255,255,255,0.3)",
-                  borderTopColor: "white",
-                }}
-              />
-              Signing in…
-            </>
-          ) : (
-            <>
-              Sign in
-              <span className="arrow">→</span>
-            </>
-          )}
-        </button>
-      </form>
-
       <p
-        className="text-sm text-center mt-8"
+        className="text-xs text-center mt-6"
         style={{ color: "var(--pl-ink-3)" }}
       >
-        New here?{" "}
-        <Link
-          to="/signup"
-          className="font-semibold"
-          style={{ color: "var(--pl-ink)" }}
-        >
-          Create an account →
-        </Link>
+        By continuing you agree to our terms and privacy policy.
       </p>
     </AuthShell>
   );
 };
-
-const Field = ({ label, suffix, ...inputProps }) => (
-  <label className="block">
-    <span
-      className="block text-xs font-medium mb-1.5"
-      style={{ color: "var(--pl-ink-2)" }}
-    >
-      {label}
-    </span>
-    <span
-      className="flex items-center rounded-xl bg-white"
-      style={{ boxShadow: "inset 0 0 0 1px var(--pl-line-2)" }}
-    >
-      <input
-        {...inputProps}
-        required
-        className="flex-1 px-4 py-3 bg-transparent rounded-xl outline-none text-sm"
-        style={{ color: "var(--pl-ink)" }}
-      />
-      {suffix && <span className="pr-3">{suffix}</span>}
-    </span>
-  </label>
-);
 
 export default Login;

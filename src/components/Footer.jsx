@@ -71,10 +71,7 @@ const Footer = () => (
         />
         <FooterCol
           title="Get started"
-          links={[
-            { to: "/signup", label: "Create account" },
-            { to: "/login", label: "Sign in" },
-          ]}
+          links={[{ to: "/login", label: "Sign in with Google" }]}
         />
         <FooterCol
           title="Company"
