@@ -1,0 +1,14 @@
+# UniConnect crawl policy
+#
+# The frontend is the marketing landing + auth surface. Everything past
+# /login is auth-gated server-side, so crawlers can't reach the social
+# graph, communities, or chat history regardless of what this file says.
+#
+# We allow indexing the public landing so people can find us via search;
+# the explicit Disallow on /api is defense-in-depth (the API actually
+# lives on a different origin in production, but if anything is ever
+# proxied through the frontend domain we don't want it scraped).
+
+User-agent: *
+Allow: /
+Disallow: /api/

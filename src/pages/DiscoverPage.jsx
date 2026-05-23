@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SkillCard from "../components/cards/SkillCard";
@@ -39,6 +39,37 @@ const DiscoverPage = () => {
       window.removeEventListener("communityDeleted", handleCommunityDelete);
   }, []);
 
+  /* ================= SEARCH USERS ================= */
+  // useCallback so the identity is stable across renders that don't change
+  // `query`. Without this the debounce effect below would have to omit the
+  // search fns from its deps (eslint warns) or re-fire on every keystroke
+  // identity churn instead of on query change.
+  const searchUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await api.get(`/user/search?q=${query}`);
+      setResults(res.data.users || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [query]);
+
+  /* ================= SEARCH COMMUNITIES ================= */
+
+  const searchCommunities = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await api.get(`/community?search=${query}`);
+      setResults(res.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [query]);
+
   /* ================= DEBOUNCED SEARCH ================= */
 
   useEffect(() => {
@@ -60,35 +91,7 @@ const DiscoverPage = () => {
     }, 400);
 
     return () => clearTimeout(timeout);
-  }, [query, token, authLoading, activeTab]);
-
-  /* ================= SEARCH USERS ================= */
-
-  const searchUsers = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get(`/user/search?q=${query}`);
-      setResults(res.data.users || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* ================= SEARCH COMMUNITIES ================= */
-
-  const searchCommunities = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get(`/community?search=${query}`);
-      setResults(res.data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [query, token, authLoading, activeTab, searchUsers, searchCommunities]);
 
   /* ================= CONNECTION HANDLERS ================= */
 

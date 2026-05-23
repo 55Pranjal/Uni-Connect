@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Logomark } from "./Navbar";
 
 /**
- * Two-column layout used by /login, /signup, /profileDecision and /onboarding.
+ * Two-column layout used by /login, /profileDecision and /onboarding.
  *
  *   <AuthShell sidebar={<SideHero ... />}>
  *     {formContents}
