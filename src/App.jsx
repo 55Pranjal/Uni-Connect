@@ -32,6 +32,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import XpToastHost from "./components/XpToastHost.jsx";
 import XpSocket from "./components/XpSocket.jsx";
 import RouteFallback from "./components/RouteFallback.jsx";
+import IOSInstallBanner from "./components/IOSInstallBanner.jsx";
 import { RouteErrorBoundary } from "./components/ErrorBoundary.jsx";
 import { ToastProvider } from "./context/ToastContext.jsx";
 import { SocketProvider } from "./context/SocketContext.jsx";
@@ -95,6 +96,7 @@ function App() {
               </Suspense>
               <XpToastHost />
               <XpSocket />
+              <IOSInstallBanner />
             </div>
           </RouteErrorBoundary>
         </SocketProvider>
