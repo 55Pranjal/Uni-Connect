@@ -17,5 +17,15 @@ createRoot(document.getElementById("root")).render(
         </AuthProvider>
       </GoogleOAuthProvider>
     </Router>
-  </StrictMode>,
+  </StrictMode>
 );
+
+// Service worker — production only. Vite's dev HMR fights SWs in dev, and an
+// active SW caching stale dev bundles is a particularly nasty failure mode.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .catch((err) => console.error("SW registration failed:", err));
+  });
+}
