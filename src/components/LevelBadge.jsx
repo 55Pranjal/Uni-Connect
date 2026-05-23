@@ -9,9 +9,9 @@ import { useAuth } from "../context/AuthContext";
  * any component that awards XP can trigger a refresh by dispatching:
  *   window.dispatchEvent(new CustomEvent("xp:refresh"))
  *
- * Gated on `isAuthenticated` — otherwise the fetch fires on Login/Signup
- * pages (Navbar mounts unconditionally) and produces a 401 in the console
- * on every visit.
+ * Gated on `isAuthenticated` — otherwise the fetch fires on the Login page
+ * (Navbar mounts unconditionally) and produces a 401 in the console on
+ * every visit.
  */
 const LevelBadge = ({ compact = false }) => {
   const { isAuthenticated } = useAuth();

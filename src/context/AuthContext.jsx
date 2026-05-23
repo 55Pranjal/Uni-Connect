@@ -65,10 +65,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   /* ================= LOGIN =================
-     Signature kept as (token, userData) so Login.jsx / Signup.jsx /
-     GoogleSignInButton don't need any changes. The token argument is
-     intentionally unused — the cookie is the source of truth. */
-   
+     Signature kept as (token, userData) so GoogleSignInButton doesn't need
+     a change. The token argument is intentionally unused — the cookie is
+     the source of truth. */
+
   const login = (_token, userData) => {
     // Some legacy code still reads avatarSeed from localStorage; keep that
     // cache populated as a courtesy. The auth source remains the cookie.
