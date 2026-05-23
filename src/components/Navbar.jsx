@@ -92,15 +92,10 @@ const Navbar = () => {
         {/* Right side */}
         <div className="flex items-center gap-2 sm:gap-3">
           {!isAuthenticated ? (
-            <>
-              <Link to="/login" className="pl-btn-ghost hidden sm:inline-flex">
-                Sign in
-              </Link>
-              <Link to="/signup" className="pl-btn">
-                Get started
-                <span className="arrow">→</span>
-              </Link>
-            </>
+            <Link to="/login" className="pl-btn">
+              Sign in
+              <span className="arrow">→</span>
+            </Link>
           ) : (
             <>
               <div className="hidden sm:block">

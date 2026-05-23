@@ -3,11 +3,12 @@ import { Routes, Route } from "react-router-dom";
 import "./App.css";
 
 // Kept as static imports:
-//   - Login/Signup: tiny auth pages users hit immediately on a cold visit.
+//   - Login: tiny auth page users hit immediately on a cold visit. Google
+//     OAuth is the only sign-in path; new accounts are created on first
+//     Google sign-in, so there's no separate /signup route.
 //   - Home: landing route, always-on-mount for the unauthenticated path.
 //   - NotFound: small, and we want it ready instantly for bad URLs.
 import Login from "./pages/Login.jsx";
-import Signup from "./pages/Signup.jsx";
 import Home from "./pages/Home.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
@@ -52,7 +53,6 @@ function App() {
                   {/* Public Routes */}
                   <Route path="/" element={<Home />} />
                   <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
                   <Route path="/public/:id" element={<PublicProfilePage />} />
                   <Route path="/projects" element={<Projects />} />
 
