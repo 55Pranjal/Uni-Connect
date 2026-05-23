@@ -10,6 +10,7 @@ import TierBadge from "../components/TierBadge";
 import { Skeleton } from "../components/Skeleton";
 import useFocusTrap from "../hooks/useFocusTrap";
 import api from "../api/api";
+import EnablePushPrompt from "../components/EnablePushPrompt";
 
 const ProfilePage = () => {
   // ✅ Correct hook usage — only at top level
@@ -487,6 +488,17 @@ const ProfilePage = () => {
               ))}
             </div>
           )}
+        </section>
+
+        {/* NOTIFICATIONS */}
+        <section>
+          <h2
+            className="pl-display mb-6"
+            style={{ fontSize: "clamp(1.5rem, 2.5vw, 1.875rem)" }}
+          >
+            Notifications
+          </h2>
+          <EnablePushPrompt />
         </section>
 
         {/* ACCOUNT */}
